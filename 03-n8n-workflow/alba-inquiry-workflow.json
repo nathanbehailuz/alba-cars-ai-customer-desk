@@ -382,7 +382,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const ctx = $('Customer Lookup Result').first().json;\nconst payload = ctx.payload;\nlet customerId = ctx.customerId;\nconst upd = $('Update Customer').first()?.json;\nconst crt = $('Create Customer').first()?.json;\nif (!customerId) {\n  if (Array.isArray(upd) && upd[0]?.id) customerId = upd[0].id;\n  else if (Array.isArray(crt) && crt[0]?.id) customerId = crt[0].id;\n  else if (upd?.id) customerId = upd.id;\n  else if (crt?.id) customerId = crt.id;\n}\nif (!customerId) {\n  throw new Error('Customer upsert failed');\n}\nreturn [{ json: { payload, customerId } }];"
+        "jsCode": "const ctx = $('Customer Lookup Result').first().json;\nconst payload = ctx.payload;\nlet customerId = ctx.customerId;\nconst direct = $input.first()?.json;\nif (!customerId && direct) {\n  if (Array.isArray(direct) && direct[0]?.id) customerId = direct[0].id;\n  else if (direct?.id) customerId = direct.id;\n}\nif (!customerId && $('Update Customer').isExecuted) {\n  const upd = $('Update Customer').first()?.json;\n  if (Array.isArray(upd) && upd[0]?.id) customerId = upd[0].id;\n  else if (upd?.id) customerId = upd.id;\n}\nif (!customerId && $('Create Customer').isExecuted) {\n  const crt = $('Create Customer').first()?.json;\n  if (Array.isArray(crt) && crt[0]?.id) customerId = crt[0].id;\n  else if (crt?.id) customerId = crt.id;\n}\nif (!customerId) {\n  throw new Error('Customer upsert failed');\n}\nreturn [{ json: { payload, customerId } }];"
       },
       "id": "a1b2c3d4-0016-4000-8000-000000000016",
       "name": "Resolve Customer Id",
