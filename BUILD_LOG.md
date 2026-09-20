@@ -51,7 +51,7 @@ Rough: scaffold + PRD alignment ~0.5h · schema ~0.5h · web app ~1.5h · dashbo
 
 ## Blockers for you
 
-1. **Supabase:** Pause or upgrade one free project, or tell me which existing project may receive the Alba migrations — then I apply SQL + share URL/anon keys into `.env.example` comments (not secrets in git).
-2. **OpenAI:** Provide `OPENAI_API_KEY` (local env only) to run `node 03-n8n-workflow/scripts/run-samples.mjs`.
-3. **GitHub:** Run `gh auth login`, then I can `gh repo create` + push all phase commits.
-4. **n8n Cloud:** Import JSON and paste webhook URL into `01-web-app` `.env.local`.
+1. **Supabase service role** — paste `SUPABASE_SERVICE_ROLE_KEY` from grid150 Project Settings → API into root `.env` and `02-dashboard/.env.local` (anon alone cannot read `alba_*` under RLS). Prefixed tables are already live on grid150.
+2. **OpenAI key scopes** — current key returns `missing_scope` / `model.request`. Create a secret key with model request permission; keep `OPENAI_MODEL=gpt-5-nano` (cheapest). Rotate if the old key was shared.
+3. **n8n** — URL is set, but production returns **404** until the workflow is **Active**. Re-import repo JSON so nodes hit `alba_*` tables.
+4. ~~GitHub~~ — remote works; latest push succeeded (`bedb603`).
