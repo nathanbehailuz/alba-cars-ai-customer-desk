@@ -119,8 +119,9 @@
         320
       ],
       "notesInFlow": true,
-      "notes": "Supabase URL + service role via $env (see README). Credential name: Supabase URL.",
-      "alwaysOutputData": true
+      "notes": "Supabase URL + service role via $vars (see README).",
+      "alwaysOutputData": true,
+      "continueOnFail": true
     },
     {
       "parameters": {
@@ -208,8 +209,8 @@
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
       "position": [
-        1680,
-        200
+        1920,
+        120
       ]
     },
     {
@@ -383,7 +384,7 @@
     },
     {
       "parameters": {
-        "jsCode": "function pickCustomerId(val) {\n  if (!val || val.error || val.code) return null;\n  if (Array.isArray(val) && val[0]?.id) return val[0].id;\n  if (val.id) return val.id;\n  return null;\n}\nfunction formatHttpError(val) {\n  if (!val || typeof val !== 'object') return null;\n  if (val.message && (val.code || val.hint || val.details)) {\n    return `${val.code || 'error'}: ${val.message}`;\n  }\n  if (val.error?.message) return val.error.message;\n  return null;\n}\nconst ctx = $('Customer Lookup Result').first().json;\nconst payload = ctx.payload;\nlet customerId = ctx.customerId || pickCustomerId($input.first()?.json);\nif (!customerId && $('Update Customer').isExecuted) {\n  customerId = pickCustomerId($('Update Customer').first()?.json);\n}\nif (!customerId && $('Create Customer').isExecuted) {\n  customerId = pickCustomerId($('Create Customer').first()?.json);\n}\nif (!customerId) {\n  customerId = pickCustomerId($('Find Customer').first()?.json);\n}\nif (!customerId) {\n  const parts = [];\n  if ($('Create Customer').isExecuted) {\n    const err = formatHttpError($('Create Customer').first()?.json);\n    if (err) parts.push(`Create Customer: ${err}`);\n  }\n  if ($('Update Customer').isExecuted) {\n    const err = formatHttpError($('Update Customer').first()?.json);\n    if (err) parts.push(`Update Customer: ${err}`);\n  }\n  throw new Error(parts.length ? parts.join('; ') : 'Customer upsert failed');\n}\nreturn [{ json: { payload, customerId } }];"
+        "jsCode": "function pickCustomerId(val) {\n  if (!val || val.error || val.code) return null;\n  if (Array.isArray(val) && val[0]?.id) return val[0].id;\n  if (val.id) return val.id;\n  return null;\n}\nfunction formatHttpError(val) {\n  if (!val || typeof val !== 'object') return null;\n  if (val.message && (val.code || val.hint || val.details)) {\n    return `${val.code || 'error'}: ${val.message}`;\n  }\n  if (val.error?.message) return val.error.message;\n  return null;\n}\nconst ctx = $('Customer Lookup Result').first().json;\nconst payload = ctx.payload;\nlet customerId = ctx.customerId || pickCustomerId($input.first()?.json);\nif (!customerId && $('Update Customer').isExecuted) {\n  customerId = pickCustomerId($('Update Customer').first()?.json);\n}\nif (!customerId && $('Create Customer').isExecuted) {\n  customerId = pickCustomerId($('Create Customer').first()?.json);\n}\nif (!customerId) {\n  customerId = pickCustomerId($('Find Customer').first()?.json);\n}\nif (!customerId) {\n  const parts = [];\n  if ($('Create Customer').isExecuted) {\n    const err = formatHttpError($('Create Customer').first()?.json);\n    if (err) parts.push(`Create Customer: ${err}`);\n  }\n  if ($('Update Customer').isExecuted) {\n    const err = formatHttpError($('Update Customer').first()?.json);\n    if (err) parts.push(`Update Customer: ${err}`);\n  }\n  return [{ json: { customerResolved: false, error: parts.length ? parts.join('; ') : 'Customer upsert failed', payload, customerId: null } }];\n}\nreturn [{ json: { customerResolved: true, payload, customerId } }];"
       },
       "id": "a1b2c3d4-0016-4000-8000-000000000016",
       "name": "Resolve Customer Id",
@@ -425,8 +426,8 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        3120,
-        400
+        3240,
+        280
       ],
       "continueOnFail": true
     },
@@ -439,8 +440,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        3360,
-        400
+        3480,
+        280
       ]
     },
     {
@@ -470,8 +471,8 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        3600,
-        400
+        3720,
+        280
       ],
       "continueOnFail": true,
       "notesInFlow": true,
@@ -483,17 +484,16 @@
           "options": {
             "caseSensitive": true,
             "leftValue": "",
-            "typeValidation": "loose"
+            "typeValidation": "strict"
           },
           "conditions": [
             {
-              "id": "openai-err",
-              "leftValue": "={{ $json.error }}",
-              "rightValue": "",
+              "id": "openai-failed",
+              "leftValue": "={{ $json.openaiFailed }}",
+              "rightValue": true,
               "operator": {
-                "type": "object",
-                "operation": "exists",
-                "singleValue": true
+                "type": "boolean",
+                "operation": "equals"
               }
             }
           ],
@@ -506,8 +506,8 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        3840,
-        400
+        4200,
+        280
       ]
     },
     {
@@ -537,7 +537,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ { submission_id: $('Assign Reference').item.json.payload.submission_id, workflow_run_id: $execution.id, status: 'failed', error_stage: 'openai_classify', error_message: JSON.stringify($json.error || $json) } }}",
+        "jsonBody": "={{ { submission_id: $('Assign Reference').item.json.payload.submission_id, workflow_run_id: $execution.id, status: 'failed', error_stage: 'openai_classify', error_message: JSON.stringify($json.openaiError || $json.error || $json) } }}",
         "options": {}
       },
       "id": "a1b2c3d4-0021-4000-8000-000000000021",
@@ -545,8 +545,8 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        4080,
-        560
+        4440,
+        400
       ],
       "continueOnFail": true
     },
@@ -559,8 +559,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        4320,
-        560
+        4680,
+        400
       ]
     },
     {
@@ -572,8 +572,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        4080,
-        280
+        4440,
+        160
       ]
     },
     {
@@ -585,8 +585,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        4560,
-        400
+        4920,
+        280
       ]
     },
     {
@@ -624,8 +624,8 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        4800,
-        400
+        5160,
+        280
       ],
       "continueOnFail": true
     },
@@ -635,17 +635,16 @@
           "options": {
             "caseSensitive": true,
             "leftValue": "",
-            "typeValidation": "loose"
+            "typeValidation": "strict"
           },
           "conditions": [
             {
-              "id": "lead-err",
-              "leftValue": "={{ $json.error }}",
-              "rightValue": "",
+              "id": "lead-ok",
+              "leftValue": "={{ $json.insertOk }}",
+              "rightValue": true,
               "operator": {
-                "type": "object",
-                "operation": "exists",
-                "singleValue": true
+                "type": "boolean",
+                "operation": "equals"
               }
             }
           ],
@@ -654,12 +653,12 @@
         "options": {}
       },
       "id": "a1b2c3d4-0026-4000-8000-000000000026",
-      "name": "IF Insert Lead Failed",
+      "name": "IF Insert Lead OK",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        5040,
-        400
+        5640,
+        280
       ]
     },
     {
@@ -689,7 +688,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ { submission_id: $('Parse AI and Apply Rules').item.json.payload.submission_id, workflow_run_id: $execution.id, status: 'failed', error_stage: 'insert_lead', error_message: JSON.stringify($json.error || $json) } }}",
+        "jsonBody": "={{ { submission_id: $('Parse AI and Apply Rules').item.json.payload.submission_id, workflow_run_id: $execution.id, status: 'failed', error_stage: 'insert_lead', error_message: String($json.error || JSON.stringify($json)) } }}",
         "options": {}
       },
       "id": "a1b2c3d4-0027-4000-8000-000000000027",
@@ -697,15 +696,15 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        5280,
-        560
+        5880,
+        400
       ],
       "continueOnFail": true
     },
     {
       "parameters": {
         "respondWith": "json",
-        "responseBody": "={{ { ok: false, error: 'Lead insert failed', submission_id: $('Parse AI and Apply Rules').item.json.payload.submission_id, reference: $('Parse AI and Apply Rules').item.json.reference, lead_id: null, summary: null } }}",
+        "responseBody": "={{ { ok: false, error: String($('Evaluate Insert Lead').item.json.error || 'Lead insert failed'), submission_id: $('Parse AI and Apply Rules').item.json.payload.submission_id, reference: $('Parse AI and Apply Rules').item.json.reference, lead_id: null, summary: null } }}",
         "options": {
           "responseCode": 500
         }
@@ -715,21 +714,21 @@
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
       "position": [
-        5520,
-        560
+        6120,
+        400
       ]
     },
     {
       "parameters": {
-        "jsCode": "const ctx = $('Parse AI and Apply Rules').first().json;\nconst leadRow = $('Insert Lead').first().json;\nconst lead = Array.isArray(leadRow) ? leadRow[0] : leadRow;\nif (!lead?.id) throw new Error('Missing lead id after insert');\nreturn [{ json: { ...ctx, lead_id: lead.id } }];"
+        "jsCode": "const ctx = $('Parse AI and Apply Rules').first().json;\nconst evaled = $('Evaluate Insert Lead').first().json;\nconst leadId = evaled.lead_id;\nreturn [{ json: { ...ctx, lead_id: leadId } }];"
       },
       "id": "a1b2c3d4-0029-4000-8000-000000000029",
       "name": "Attach Lead Id",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        5280,
-        320
+        5880,
+        200
       ]
     },
     {
@@ -811,8 +810,8 @@
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3.2,
       "position": [
-        5520,
-        320
+        6360,
+        200
       ]
     },
     {
@@ -1179,8 +1178,8 @@
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
       "position": [
-        7680,
-        320
+        6120,
+        200
       ]
     },
     {
@@ -1194,6 +1193,161 @@
       "position": [
         5880,
         160
+      ]
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{ $vars.SUPABASE_URL }}/rest/v1/alba_processing_log?submission_id=eq.{{ $json.payload.submission_id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $vars.SUPABASE_SERVICE_ROLE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $vars.SUPABASE_SERVICE_ROLE_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=minimal"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { status: 'success', updated_at: new Date().toISOString() } }}",
+        "options": {}
+      },
+      "id": "a1b2c3d4-0050-4000-8000-000000000050",
+      "name": "Log Duplicate Success",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1680,
+        120
+      ],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "cust-resolved",
+              "leftValue": "={{ $json.customerResolved }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "a1b2c3d4-0051-4000-8000-000000000051",
+      "name": "IF Customer Resolved",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        3000,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $vars.SUPABASE_URL }}/rest/v1/alba_processing_log",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $vars.SUPABASE_SERVICE_ROLE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $vars.SUPABASE_SERVICE_ROLE_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=minimal"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { submission_id: $json.payload.submission_id, workflow_run_id: $execution.id, status: 'failed', error_stage: 'customer_upsert', error_message: String($json.error || 'Customer upsert failed') } }}",
+        "options": {}
+      },
+      "id": "a1b2c3d4-0052-4000-8000-000000000052",
+      "name": "Log Customer Failed",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3240,
+        560
+      ],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { ok: false, error: String($('Resolve Customer Id').item.json.error || 'Customer upsert failed'), submission_id: $('Resolve Customer Id').item.json.payload?.submission_id ?? null, reference: null, lead_id: null, summary: null } }}",
+        "options": {
+          "responseCode": 500
+        }
+      },
+      "id": "a1b2c3d4-0053-4000-8000-000000000053",
+      "name": "Respond Workflow Error",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        3480,
+        560
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const openai = $input.first().json;\nconst hasContent = Boolean(openai?.choices?.[0]?.message?.content);\nconst hasError = Boolean(openai?.error) || Boolean(openai?.code && !hasContent);\nconst openaiFailed = hasError || !hasContent;\nreturn [{ json: { ...openai, openaiFailed, openaiError: openai?.error || (openaiFailed ? openai : null) } }];"
+      },
+      "id": "a1b2c3d4-0054-4000-8000-000000000054",
+      "name": "Evaluate OpenAI Result",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3960,
+        280
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const ctx = $('Parse AI and Apply Rules').first().json;\nconst leadRow = $('Insert Lead').first().json;\nconst lead = Array.isArray(leadRow) ? leadRow[0] : leadRow;\nconst hasN8nError = Boolean(leadRow?.error);\nconst hasPgError = Boolean(lead?.code || leadRow?.code);\nconst leadId = lead?.id && !hasN8nError && !hasPgError ? lead.id : null;\nconst insertOk = Boolean(leadId);\nconst error = insertOk\n  ? null\n  : (leadRow?.error?.message || lead?.message || leadRow?.message || 'Lead insert failed');\nreturn [{ json: { ...ctx, insertOk, lead_id: leadId, error, insertRaw: leadRow } }];"
+      },
+      "id": "a1b2c3d4-0055-4000-8000-000000000055",
+      "name": "Evaluate Insert Lead",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5400,
+        280
       ]
     }
   ],
@@ -1275,7 +1429,7 @@
       "main": [
         [
           {
-            "node": "Respond Duplicate",
+            "node": "Log Duplicate Success",
             "type": "main",
             "index": 0
           }
@@ -1366,7 +1520,7 @@
       "main": [
         [
           {
-            "node": "Get Lead Reference RPC",
+            "node": "IF Customer Resolved",
             "type": "main",
             "index": 0
           }
@@ -1399,7 +1553,7 @@
       "main": [
         [
           {
-            "node": "IF OpenAI Failed",
+            "node": "Evaluate OpenAI Result",
             "type": "main",
             "index": 0
           }
@@ -1472,25 +1626,7 @@
       "main": [
         [
           {
-            "node": "IF Insert Lead Failed",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "IF Insert Lead Failed": {
-      "main": [
-        [
-          {
-            "node": "Log Insert Lead Failed",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Attach Lead Id",
+            "node": "Evaluate Insert Lead",
             "type": "main",
             "index": 0
           }
@@ -1696,6 +1832,86 @@
           }
         ]
       ]
+    },
+    "Log Duplicate Success": {
+      "main": [
+        [
+          {
+            "node": "Respond Duplicate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF Customer Resolved": {
+      "main": [
+        [
+          {
+            "node": "Get Lead Reference RPC",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Log Customer Failed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Customer Failed": {
+      "main": [
+        [
+          {
+            "node": "Respond Workflow Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Evaluate OpenAI Result": {
+      "main": [
+        [
+          {
+            "node": "IF OpenAI Failed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Evaluate Insert Lead": {
+      "main": [
+        [
+          {
+            "node": "IF Insert Lead OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF Insert Lead OK": {
+      "main": [
+        [
+          {
+            "node": "Attach Lead Id",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Log Insert Lead Failed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "pinData": {},
@@ -1712,5 +1928,5 @@
     "templateCredsSetupCompleted": false,
     "instanceId": "alba-cars-inquiry-desk-export"
   },
-  "versionId": "alba-inquiry-v1"
+  "versionId": "alba-inquiry-v2-error-handling"
 }

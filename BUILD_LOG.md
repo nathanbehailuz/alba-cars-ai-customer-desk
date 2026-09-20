@@ -34,6 +34,7 @@ Built a monorepo per [docs/task.md](docs/task.md): marketing-site mimic + inquir
   - **Resolve Customer Id** crashed on create-branch (`Update Customer` not executed)
   - **Respond Success** too late / wrong `$json` → empty HTTP 200 body
   - Create Customer `on_conflict=email` invalid against `lower(email)` unique index → plain POST + `return=representation`
+  - Code-node `throw` on customer/lead failure killed the webhook → now returns handled 500 JSON; OpenAI/insert failures detected via evaluate nodes (PostgREST `code` + missing `id`, not only `$json.error`); duplicate path PATCHes processing log to `success`
 - Vercel blocked Next.js **15.1.0 / 15.2.4** (CVE-2025-66478); apps upgraded to **15.5.25** for deploy.
 
 ## How I verified it works
@@ -54,20 +55,19 @@ Built a monorepo per [docs/task.md](docs/task.md): marketing-site mimic + inquir
 
 ## Known limitations
 
-- Email/WhatsApp delivery not wired (stored as `skipped` with drafted body).
 - Voice agent = queue status only (`ready_for_voice_agent` / `alba_voice_agent_queue`).
 - Mocked vehicle stock only.
 - Demo disclaimer required (not production Alba).
 - Dashboard uses **service_role** server-side for demo reads (not production-hardened auth).
-- Optional video walkthrough not recorded yet.
 
 ## Time spent
 
-Rough: scaffold + PRD ~0.5h · schema ~0.5h · web app ~1.5h · dashboard ~1h · n8n/samples/wiring/fixes ~3h · Vercel + submission docs ~1h.
+Rough: scaffold + PRD ~0.5h · schema ~0.5h · web app ~1.5h · dashboard ~1h · n8n/samples/wiring/fixes ~3h · Vercel + submission docs ~1h · error-handling polish ~0.5h.
 
-## Optional follow-ups (not blockers)
+## If I had more time
 
-1. Demo video for the submission form.
-2. Wire Resend / WhatsApp Business for real delivery statuses.
+1. Wire Resend / WhatsApp Business so confirmation and sales-alert rows leave `skipped` and actually deliver.
+2. Optional demo video for the submission form.
 3. Simple dashboard auth or private Vercel protection for review.
 4. Appointment calendar source beyond configurable `APPOINTMENT_URL`.
+5. HTTP retry/backoff on OpenAI for flaky calls.

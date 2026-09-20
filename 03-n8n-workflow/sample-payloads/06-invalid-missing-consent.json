@@ -1,0 +1,22 @@
+{
+  "name": "invalid_missing_consent",
+  "description": "Edge case — contact_consent false; expect HTTP 400 validation error",
+  "payload": {
+    "submission_id": "11111111-1111-4111-8111-111111111106",
+    "intent": "buy",
+    "category_seed": "vehicle_purchase",
+    "name": "Invalid Consent",
+    "email": "invalid.consent@example.com",
+    "preferred_channel": "email",
+    "message": "Looking at a RAV4 but I did not tick consent.",
+    "contact_consent": false,
+    "whatsapp_consent": false,
+    "voice_consent": false,
+    "page_context": {
+      "source": "sample-pack",
+      "page_url": "http://localhost:3000/buy",
+      "page_type": "buy",
+      "submitted_at": "2026-03-20T10:25:00.000Z"
+    }
+  }
+}

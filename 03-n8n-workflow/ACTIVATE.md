@@ -12,7 +12,7 @@ Create variables under **Personal → Variables** (or Overview → Variables):
 | --- | --- |
 | `OPENAI_API_KEY` | your `sk-…` key |
 | `OPENAI_MODEL` | `gpt-5-nano` |
-| `SUPABASE_URL` | `https://gvtprsfkvhdwbfvwynog.supabase.co` |
+| `SUPABASE_URL` | `https://YOUR_PROJECT.supabase.co` |
 | `SUPABASE_SERVICE_ROLE_KEY` | Supabase **service_role** JWT (`eyJ…` with role service_role) |
 
 Optional (if used by nodes): `EMAIL_PROVIDER`, `WHATSAPP_PROVIDER`, `SALES_ALERT_PROVIDER`.
@@ -22,11 +22,12 @@ Optional (if used by nodes): `EMAIL_PROVIDER`, `WHATSAPP_PROVIDER`, `SALES_ALERT
 1. Open [https://albacarsdemo.app.n8n.cloud](https://albacarsdemo.app.n8n.cloud) and sign in.
 2. Add the **Variables** above.
 3. **Workflows** → import `03-n8n-workflow/alba-inquiry-workflow.json`  
-   (If an older copy exists, delete it or re-import so expressions use `$vars`, not `$env`.)
+   (If an older copy exists, delete it or re-import so expressions use `$vars`, not `$env`, and error paths use evaluate + Respond nodes.)
 4. Confirm Webhook path is `alba-inquiry`.
 5. **Save** → toggle **Active / Published** ON.
 6. Copy **Production** webhook URL into `01-web-app/.env.local` as `N8N_WEBHOOK_URL`.
 7. Restart `npm run dev` if the app is running.
+8. After a green run, capture one **Success** execution detail screenshot into `docs/success-execution.png` (not the Overview failure-rate panel).
 
 ## Quick test
 

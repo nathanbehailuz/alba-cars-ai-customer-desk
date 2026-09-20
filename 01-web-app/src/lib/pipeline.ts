@@ -136,6 +136,16 @@ export async function runLocalInquiryPipeline(
     `alba_leads?submission_id=eq.${payload.submission_id}&select=id,reference,ai_summary`,
   );
   if (Array.isArray(existing) && existing.length) {
+    await sb(
+      supabaseUrl,
+      serviceKey,
+      `alba_processing_log?submission_id=eq.${payload.submission_id}`,
+      {
+        method: "PATCH",
+        body: { status: "success", updated_at: new Date().toISOString() },
+        prefer: "return=minimal",
+      },
+    );
     return {
       ok: true,
       mode: "local",
