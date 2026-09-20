@@ -1,11 +1,11 @@
 # 02 — Dashboard
 
-Lightweight internal UI over Supabase: leads, communications (messages), voice queue status, and AI sample evaluation runs.
+Lightweight internal UI over Supabase: leads, communications (messages), and AI sample evaluation runs.
 
-## Stack (planned)
+## Stack
 
-- Next.js (App Router) + TypeScript
-- `@supabase/supabase-js` (anon + optional simple auth)
+- Next.js 15 + TypeScript + Tailwind
+- `@supabase/supabase-js` (prefer `SUPABASE_SERVICE_ROLE_KEY` server-side for MVP reads with RLS)
 
 ## Run
 
@@ -16,18 +16,17 @@ npm install
 npm run dev
 ```
 
-Use a different port if the web app is already on 3000 (e.g. `npm run dev -- -p 3001`).
+Defaults to [http://localhost:3001](http://localhost:3001).
 
-## Views (MVP)
+## Views
 
-- Leads list + detail (score, summary, reference)
-- Communications / messages by lead
-- AI eval runs (sample pack outputs)
-
-## Env
-
-`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`. Service role stays server-side / n8n only.
+| Route | Purpose |
+| --- | --- |
+| `/` | Leads table |
+| `/leads/[id]` | Lead detail + messages + voice queue |
+| `/messages` | All communications |
+| `/eval` | `ai_eval_runs` sample GPT outputs |
 
 ## Verify
 
-After a successful webhook run, a new lead and communication rows appear here.
+After n8n processes an inquiry, the lead and message rows appear here.
