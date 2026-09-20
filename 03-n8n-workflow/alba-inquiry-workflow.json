@@ -343,7 +343,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "={{ $vars.SUPABASE_URL }}/rest/v1/alba_customers?on_conflict={{ $json.payload.email ? 'email' : 'phone' }}",
+        "url": "={{ $vars.SUPABASE_URL }}/rest/v1/alba_customers",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
@@ -361,7 +361,7 @@
             },
             {
               "name": "Prefer",
-              "value": "resolution=merge-duplicates,return=representation"
+              "value": "return=representation"
             }
           ]
         },
@@ -378,11 +378,12 @@
         2640,
         520
       ],
-      "continueOnFail": true
+      "continueOnFail": true,
+      "alwaysOutputData": true
     },
     {
       "parameters": {
-        "jsCode": "function pickCustomerId(val) {\n  if (!val || val.error || val.code) return null;\n  if (Array.isArray(val) && val[0]?.id) return val[0].id;\n  if (val.id) return val.id;\n  return null;\n}\nconst ctx = $('Customer Lookup Result').first().json;\nconst payload = ctx.payload;\nlet customerId = ctx.customerId || pickCustomerId($input.first()?.json);\nif (!customerId && $('Update Customer').isExecuted) {\n  customerId = pickCustomerId($('Update Customer').first()?.json);\n}\nif (!customerId && $('Create Customer').isExecuted) {\n  customerId = pickCustomerId($('Create Customer').first()?.json);\n}\nif (!customerId) {\n  customerId = pickCustomerId($('Find Customer').first()?.json);\n}\nif (!customerId) {\n  throw new Error('Customer upsert failed');\n}\nreturn [{ json: { payload, customerId } }];"
+        "jsCode": "function pickCustomerId(val) {\n  if (!val || val.error || val.code) return null;\n  if (Array.isArray(val) && val[0]?.id) return val[0].id;\n  if (val.id) return val.id;\n  return null;\n}\nfunction formatHttpError(val) {\n  if (!val || typeof val !== 'object') return null;\n  if (val.message && (val.code || val.hint || val.details)) {\n    return `${val.code || 'error'}: ${val.message}`;\n  }\n  if (val.error?.message) return val.error.message;\n  return null;\n}\nconst ctx = $('Customer Lookup Result').first().json;\nconst payload = ctx.payload;\nlet customerId = ctx.customerId || pickCustomerId($input.first()?.json);\nif (!customerId && $('Update Customer').isExecuted) {\n  customerId = pickCustomerId($('Update Customer').first()?.json);\n}\nif (!customerId && $('Create Customer').isExecuted) {\n  customerId = pickCustomerId($('Create Customer').first()?.json);\n}\nif (!customerId) {\n  customerId = pickCustomerId($('Find Customer').first()?.json);\n}\nif (!customerId) {\n  const parts = [];\n  if ($('Create Customer').isExecuted) {\n    const err = formatHttpError($('Create Customer').first()?.json);\n    if (err) parts.push(`Create Customer: ${err}`);\n  }\n  if ($('Update Customer').isExecuted) {\n    const err = formatHttpError($('Update Customer').first()?.json);\n    if (err) parts.push(`Update Customer: ${err}`);\n  }\n  throw new Error(parts.length ? parts.join('; ') : 'Customer upsert failed');\n}\nreturn [{ json: { payload, customerId } }];"
       },
       "id": "a1b2c3d4-0016-4000-8000-000000000016",
       "name": "Resolve Customer Id",
