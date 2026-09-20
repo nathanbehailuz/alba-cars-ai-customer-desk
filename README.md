@@ -30,12 +30,16 @@ Website inquiry desk, AI lead qualification, and n8n automation for ALBA CARS �
 
 ## Live links
 
+Stable production aliases (use these):
+
 | Surface | URL |
 | --- | --- |
 | Web app | https://alba-cars-web.vercel.app |
 | Dashboard | https://alba-cars-dashboard-dun.vercel.app |
 | n8n | https://albacarsdemo.app.n8n.cloud (Active; path `alba-inquiry`) |
 | Repository | https://github.com/nathanbehailuz/alba-cars-ai-customer-desk |
+
+Vercel also shows per-deployment URLs like `*-natecodes-projects.vercel.app` and branch URLs like `*-git-main-*` — those are automatic; they are not the README links. Recent Git deploys failed until each project’s **Root Directory** was set to `01-web-app` / `02-dashboard` (monorepo). The `-dun` / `alba-cars-web` aliases still served the last successful deploy.
 
 ## Security
 
