@@ -19,14 +19,15 @@ export type Lead = {
   customers?: { name: string | null; email: string | null; phone: string | null } | null;
 };
 
-/** PostgREST embed typing may use arrays; leads.customer_id is many-to-one. */
+/** PostgREST embed typing may use arrays; alba_leads.customer_id is many-to-one. */
 export function normalizeLeadRow(row: Record<string, unknown>): Lead {
-  const raw = row.customers;
+  const raw = row.alba_customers ?? row.customers;
   let customers: Lead["customers"] = null;
   if (raw != null) {
     customers = (Array.isArray(raw) ? raw[0] : raw) as Lead["customers"];
   }
-  return { ...row, customers } as Lead;
+  const { alba_customers: _embed, ...rest } = row;
+  return { ...rest, customers } as Lead;
 }
 
 export type Communication = {

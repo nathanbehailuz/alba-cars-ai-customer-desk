@@ -13,7 +13,7 @@ export default async function EvalPage() {
 
   const supabase = getSupabase()!;
   const { data, error } = await supabase
-    .from("ai_eval_runs")
+    .from("alba_ai_eval_runs")
     .select("*")
     .order("created_at", { ascending: false })
     .limit(50);

@@ -13,7 +13,7 @@ export default async function MessagesPage() {
 
   const supabase = getSupabase()!;
   const { data, error } = await supabase
-    .from("communications")
+    .from("alba_communications")
     .select("id, lead_id, channel, message_type, content, delivery_status, sent_at, created_at")
     .order("created_at", { ascending: false })
     .limit(100);

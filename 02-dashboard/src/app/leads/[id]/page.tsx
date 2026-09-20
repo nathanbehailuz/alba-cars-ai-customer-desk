@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getSupabase, isConfigured, type Communication, type Lead } from "@/lib/supabase";
+import { getSupabase, isConfigured, normalizeLeadRow, type Communication, type Lead } from "@/lib/supabase";
 
 export const dynamic = "force-dynamic";
 
@@ -16,34 +16,35 @@ export default async function LeadDetailPage({
 
   const supabase = getSupabase()!;
   const { data: lead } = await supabase
-    .from("leads")
+    .from("alba_leads")
     .select(
-      "*, customers(name, email, phone, preferred_channel)",
+      "*, alba_customers(name, email, phone, preferred_channel)",
     )
     .eq("id", id)
     .maybeSingle();
 
   if (!lead) notFound();
 
-  const typed = lead as Lead & {
-    ai_raw?: unknown;
-    page_context?: unknown;
-    customers?: {
+  const normalized = normalizeLeadRow(lead as Record<string, unknown>);
+  const typed = {
+    ...normalized,
+    ...(lead as Record<string, unknown>),
+    customers: normalized.customers as {
       name: string | null;
       email: string | null;
       phone: string | null;
       preferred_channel: string | null;
-    } | null;
+    } | null,
   };
 
   const { data: messages } = await supabase
-    .from("communications")
+    .from("alba_communications")
     .select("*")
     .eq("lead_id", id)
     .order("created_at", { ascending: false });
 
   const { data: voice } = await supabase
-    .from("voice_agent_queue")
+    .from("alba_voice_agent_queue")
     .select("*")
     .eq("lead_id", id)
     .maybeSingle();

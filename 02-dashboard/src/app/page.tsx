@@ -40,9 +40,9 @@ export default async function LeadsPage() {
 
   const supabase = getSupabase()!;
   const { data, error } = await supabase
-    .from("leads")
+    .from("alba_leads")
     .select(
-      "id, submission_id, reference, customer_id, category, intent, original_message, ai_summary, lead_score, priority, recommended_cta, status, source_page, vehicle_interest, created_at, customers(name, email, phone)",
+      "id, submission_id, reference, customer_id, category, intent, original_message, ai_summary, lead_score, priority, recommended_cta, status, source_page, vehicle_interest, created_at, alba_customers(name, email, phone)",
     )
     .order("created_at", { ascending: false })
     .limit(100);

@@ -24,7 +24,7 @@ const samplesDir = join(root, "sample-payloads");
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
-const MODEL = process.env.OPENAI_MODEL || "gpt-4o-mini";
+const MODEL = process.env.OPENAI_MODEL || "gpt-5-nano";
 const APPOINTMENT_URL = process.env.APPOINTMENT_URL || "https://example.com/book";
 
 if (!OPENAI_API_KEY) {
@@ -106,7 +106,7 @@ async function processOne(sample, { evalOnly = false } = {}) {
   const err = validate(payload);
   if (err) throw new Error(err);
 
-  await sb("processing_log", {
+  await sb("alba_processing_log", {
     method: "POST",
     body: {
       submission_id: payload.submission_id,
@@ -116,7 +116,7 @@ async function processOne(sample, { evalOnly = false } = {}) {
   });
 
   const existing = await sb(
-    `leads?submission_id=eq.${payload.submission_id}&select=id,reference`,
+    `alba_leads?submission_id=eq.${payload.submission_id}&select=id,reference`,
   );
   if (existing?.length) {
     console.log(`[skip duplicate] ${scenario_key} → ${existing[0].reference}`);
@@ -134,7 +134,7 @@ async function processOne(sample, { evalOnly = false } = {}) {
   const score = Number(parsed.lead_score) || 0;
   const priority = priorityFromScore(score);
 
-  await sb("ai_eval_runs", {
+  await sb("alba_ai_eval_runs", {
     method: "POST",
     body: {
       scenario_key,
@@ -156,10 +156,10 @@ async function processOne(sample, { evalOnly = false } = {}) {
   const filter = payload.email
     ? `email=eq.${encodeURIComponent(payload.email)}`
     : `phone=eq.${encodeURIComponent(payload.phone)}`;
-  const found = await sb(`customers?${filter}&select=id`);
+  const found = await sb(`alba_customers?${filter}&select=id`);
   if (found?.length) {
     customerId = found[0].id;
-    await sb(`customers?id=eq.${customerId}`, {
+    await sb(`alba_customers?id=eq.${customerId}`, {
       method: "PATCH",
       body: {
         name: payload.name ?? undefined,
@@ -172,7 +172,7 @@ async function processOne(sample, { evalOnly = false } = {}) {
       prefer: "return=minimal",
     });
   } else {
-    const created = await sb("customers", {
+    const created = await sb("alba_customers", {
       method: "POST",
       body: {
         name: payload.name || null,
@@ -187,7 +187,7 @@ async function processOne(sample, { evalOnly = false } = {}) {
     customerId = created[0].id;
   }
 
-  const refRows = await sb("rpc/next_lead_reference", { method: "POST", body: {} }).catch(
+  const refRows = await sb("rpc/alba_next_lead_reference", { method: "POST", body: {} }).catch(
     () => null,
   );
   // next_lead_reference is a function returning text — PostgREST rpc
@@ -199,7 +199,7 @@ async function processOne(sample, { evalOnly = false } = {}) {
     reference = `AC-${String(Date.now()).slice(-5)}`;
   }
 
-  const leadRows = await sb("leads", {
+  const leadRows = await sb("alba_leads", {
     method: "POST",
     body: {
       submission_id: payload.submission_id,
@@ -242,7 +242,7 @@ async function processOne(sample, { evalOnly = false } = {}) {
   }
 
   for (const channel of channels) {
-    await sb("communications", {
+    await sb("alba_communications", {
       method: "POST",
       body: {
         lead_id: lead.id,
@@ -257,7 +257,7 @@ async function processOne(sample, { evalOnly = false } = {}) {
   }
 
   if (priority === "hot") {
-    await sb("communications", {
+    await sb("alba_communications", {
       method: "POST",
       body: {
         lead_id: lead.id,
@@ -271,7 +271,7 @@ async function processOne(sample, { evalOnly = false } = {}) {
   }
 
   if (voiceEligible) {
-    await sb("voice_agent_queue", {
+    await sb("alba_voice_agent_queue", {
       method: "POST",
       body: {
         lead_id: lead.id,
@@ -285,7 +285,7 @@ async function processOne(sample, { evalOnly = false } = {}) {
     });
   }
 
-  await sb(`processing_log?submission_id=eq.${payload.submission_id}`, {
+  await sb(`alba_processing_log?submission_id=eq.${payload.submission_id}`, {
     method: "PATCH",
     body: { status: "success", updated_at: new Date().toISOString() },
     prefer: "return=minimal",
@@ -315,7 +315,7 @@ async function main() {
       await processOne(sample, { evalOnly });
     } catch (e) {
       console.error(`[fail] ${file}:`, e.message || e);
-      await sb("processing_log", {
+      await sb("alba_processing_log", {
         method: "POST",
         body: {
           submission_id: sample.payload?.submission_id || sample.submission_id,

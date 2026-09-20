@@ -71,7 +71,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "={{ $env.SUPABASE_URL }}/rest/v1/processing_log",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/alba_processing_log",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
@@ -109,7 +109,7 @@
     {
       "parameters": {
         "method": "GET",
-        "url": "={{ $env.SUPABASE_URL }}/rest/v1/leads?submission_id=eq.{{ $('Validate Input').item.json.payload.submission_id }}&select=id,reference,ai_summary",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/alba_leads?submission_id=eq.{{ $('Validate Input').item.json.payload.submission_id }}&select=id,reference,ai_summary",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
@@ -196,7 +196,7 @@
     {
       "parameters": {
         "method": "GET",
-        "url": "={{ $env.SUPABASE_URL }}/rest/v1/customers?{{ $json.customerFilter }}&select=id",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/alba_customers?{{ $json.customerFilter }}&select=id",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
@@ -261,7 +261,7 @@
     {
       "parameters": {
         "method": "PATCH",
-        "url": "={{ $env.SUPABASE_URL }}/rest/v1/customers?id=eq.{{ $json.customerId }}",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/alba_customers?id=eq.{{ $json.customerId }}",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
@@ -298,7 +298,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "={{ $env.SUPABASE_URL }}/rest/v1/customers",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/alba_customers",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
@@ -345,7 +345,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "={{ $env.SUPABASE_URL }}/rest/v1/rpc/next_lead_reference",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/rpc/alba_next_lead_reference",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
@@ -404,7 +404,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ { model: $env.OPENAI_MODEL || 'gpt-4o-mini', temperature: 0.2, response_format: { type: 'json_object' }, messages: [ { role: 'system', content: 'You are ALBA CARS lead qualification AI. Return ONLY valid JSON with keys: category, summary, vehicle (object), buying_timeline, buying_intent, urgency, lead_score (0-100), recommended_action, recommended_cta, voice_agent_eligible (boolean), customer_confirmation, sales_brief. Categories: vehicle_purchase, vehicle_search, test_drive, financing, trade_in, vehicle_sale, general_sales_question, spam. Currency AED.' }, { role: 'user', content: JSON.stringify($json.payload) } ] } }}",
+        "jsonBody": "={{ { model: $env.OPENAI_MODEL || 'gpt-5-nano', temperature: 0.2, response_format: { type: 'json_object' }, messages: [ { role: 'system', content: 'You are ALBA CARS lead qualification AI. Return ONLY valid JSON with keys: category, summary, vehicle (object), buying_timeline, buying_intent, urgency, lead_score (0-100), recommended_action, recommended_cta, voice_agent_eligible (boolean), customer_confirmation, sales_brief. Categories: vehicle_purchase, vehicle_search, test_drive, financing, trade_in, vehicle_sale, general_sales_question, spam. Currency AED.' }, { role: 'user', content: JSON.stringify($json.payload) } ] } }}",
         "options": {}
       },
       "id": "a1b2c3d4-0019-4000-8000-000000000019",
@@ -449,7 +449,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "={{ $env.SUPABASE_URL }}/rest/v1/processing_log",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/alba_processing_log",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
@@ -516,7 +516,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "={{ $env.SUPABASE_URL }}/rest/v1/leads",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/alba_leads",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
@@ -583,7 +583,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "={{ $env.SUPABASE_URL }}/rest/v1/processing_log",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/alba_processing_log",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
@@ -724,7 +724,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "={{ $env.SUPABASE_URL }}/rest/v1/communications",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/alba_communications",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
@@ -799,7 +799,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "={{ $env.SUPABASE_URL }}/rest/v1/communications",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/alba_communications",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
@@ -884,7 +884,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "={{ $env.SUPABASE_URL }}/rest/v1/communications",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/alba_communications",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
@@ -960,7 +960,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "={{ $env.SUPABASE_URL }}/rest/v1/voice_agent_queue",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/alba_voice_agent_queue",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
@@ -1007,7 +1007,7 @@
     {
       "parameters": {
         "method": "PATCH",
-        "url": "={{ $env.SUPABASE_URL }}/rest/v1/processing_log?submission_id=eq.{{ $json.payload.submission_id }}",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/alba_processing_log?submission_id=eq.{{ $json.payload.submission_id }}",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
