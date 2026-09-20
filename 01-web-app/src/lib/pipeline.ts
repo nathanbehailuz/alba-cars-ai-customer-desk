@@ -62,6 +62,38 @@ function priorityFromScore(score: number) {
   return "early";
 }
 
+function interestPhrase(payload: InquiryPayload) {
+  const intent = String(payload.intent || payload.category_seed || "").toLowerCase();
+  const map: Record<string, string> = {
+    buy: "buy a vehicle",
+    vehicle_purchase: "buy a vehicle",
+    sell: "sell your vehicle",
+    vehicle_sale: "sell your vehicle",
+    trade_in: "trade in your vehicle",
+    test_drive: "book a test drive",
+    financing: "explore financing",
+    find: "find a vehicle",
+    vehicle_search: "find a vehicle",
+    question: "ask a question",
+    general_sales_question: "ask a question",
+  };
+  return map[intent] || "get help from our team";
+}
+
+function draftFallbackConfirmation(
+  payload: InquiryPayload,
+  reference: string,
+  appointmentUrl: string,
+) {
+  const name = (payload.name || "").trim().split(/\s+/)[0];
+  const hello = name ? `Hi ${name},` : "Hi,";
+  const detail = (payload.message || "").trim();
+  const detailBit = detail
+    ? ` Details we captured: "${detail.slice(0, 140)}${detail.length > 140 ? "…" : ""}".`
+    : "";
+  return `${hello} thanks for reaching out to ALBA CARS! We have noted your interest to ${interestPhrase(payload)}.${detailBit} Next step: a sales advisor will review your request and follow up shortly. You can also book here: ${appointmentUrl}. Your reference is ${reference}.`;
+}
+
 function validate(payload: InquiryPayload) {
   if (!payload?.submission_id) return "submission_id required";
   if (!payload.email && !payload.phone) return "email or phone required";
@@ -118,7 +150,13 @@ category, summary, vehicle (object), buying_timeline, buying_intent, urgency,
 lead_score (0-100), recommended_action, recommended_cta, voice_agent_eligible (boolean),
 customer_confirmation, sales_brief.
 Categories: vehicle_purchase, vehicle_search, test_drive, financing, trade_in, vehicle_sale, general_sales_question, spam.
-Currency AED. Brand voice: professional Dubai dealership. Include appointment link placeholder: ${appointmentUrl}`;
+Currency AED. Brand voice: professional Dubai dealership.
+
+customer_confirmation MUST follow this structure (plain text, not markdown):
+1) Thank them for reaching out to ALBA CARS (use their first name if provided).
+2) Say we have noted their interest, in plain language based on the inquiry (e.g. buy a car, trade-in, sell their vehicle, book a test drive, financing, find a car, or a general question) and include 1–2 concrete details from their message (model, budget, timeline).
+3) End with one clear action item — what ALBA will do next (advisor follow-up, share appointment link ${appointmentUrl}, expect a call, etc.).
+Keep under ~120 words. If a reference like AC-##### is in the payload, mention it once.`;
 
   const started = Date.now();
   const aiRes = await fetch("https://api.openai.com/v1/chat/completions", {
@@ -129,7 +167,6 @@ Currency AED. Brand voice: professional Dubai dealership. Include appointment li
     },
     body: JSON.stringify({
       model,
-      temperature: 0.2,
       response_format: { type: "json_object" },
       max_completion_tokens: 800,
       messages: [
@@ -249,7 +286,7 @@ Currency AED. Brand voice: professional Dubai dealership. Include appointment li
 
   const confirmation =
     (parsed.customer_confirmation as string) ||
-    `Thanks for contacting ALBA CARS. We received your inquiry. Reference ${reference}. Book: ${appointmentUrl}`;
+    draftFallbackConfirmation(payload, reference, appointmentUrl);
 
   const channels: Array<"email" | "whatsapp"> = [];
   if (payload.preferred_channel === "email" || payload.preferred_channel === "both") {
