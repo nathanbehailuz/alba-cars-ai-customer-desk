@@ -66,7 +66,7 @@
     {
       "parameters": {
         "respondWith": "json",
-        "responseBody": "={{ { ok: false, error: $json.errors?.join('; ') || 'validation failed', reference: null, lead_id: null, summary: null } }}",
+        "responseBody": "={{ { ok: false, error: $json.errors?.join('; ') || 'validation failed', submission_id: $json.payload?.submission_id ?? null, reference: null, lead_id: null, summary: null } }}",
         "options": {
           "responseCode": 400
         }
@@ -200,7 +200,7 @@
     {
       "parameters": {
         "respondWith": "json",
-        "responseBody": "={{ { ok: true, reference: $json.reference, lead_id: $json.lead_id, summary: $json.summary } }}",
+        "responseBody": "={{ { ok: true, reference: $json.reference, submission_id: $json.payload?.submission_id ?? null, lead_id: $json.lead_id, summary: $json.summary } }}",
         "options": {}
       },
       "id": "a1b2c3d4-0009-4000-8000-000000000009",
@@ -461,7 +461,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ { model: $vars.OPENAI_MODEL || 'gpt-5-nano', temperature: 0.2, response_format: { type: 'json_object' }, messages: [ { role: 'system', content: 'You are ALBA CARS lead qualification AI. Return ONLY valid JSON with keys: category, summary, vehicle (object), buying_timeline, buying_intent, urgency, lead_score (0-100), recommended_action, recommended_cta, voice_agent_eligible (boolean), customer_confirmation, sales_brief. Categories: vehicle_purchase, vehicle_search, test_drive, financing, trade_in, vehicle_sale, general_sales_question, spam. Currency AED.' }, { role: 'user', content: JSON.stringify($json.payload) } ] } }}",
+        "jsonBody": "={{ { model: $vars.OPENAI_MODEL || 'gpt-5-nano', response_format: { type: 'json_object' }, messages: [ { role: 'system', content: 'You are ALBA CARS lead qualification AI. Return ONLY valid JSON with keys: category, summary, vehicle (object), buying_timeline, buying_intent, urgency, lead_score (0-100), recommended_action, recommended_cta, voice_agent_eligible (boolean), customer_confirmation, sales_brief. Categories: vehicle_purchase, vehicle_search, test_drive, financing, trade_in, vehicle_sale, general_sales_question, spam. Currency AED.' }, { role: 'user', content: JSON.stringify($json.payload) } ] } }}",
         "options": {}
       },
       "id": "a1b2c3d4-0019-4000-8000-000000000019",
@@ -704,7 +704,7 @@
     {
       "parameters": {
         "respondWith": "json",
-        "responseBody": "={{ { ok: false, reference: $('Parse AI and Apply Rules').item.json.reference, lead_id: null, summary: 'Lead insert failed' } }}",
+        "responseBody": "={{ { ok: false, error: 'Lead insert failed', submission_id: $('Parse AI and Apply Rules').item.json.payload.submission_id, reference: $('Parse AI and Apply Rules').item.json.reference, lead_id: null, summary: null } }}",
         "options": {
           "responseCode": 500
         }
@@ -1170,7 +1170,7 @@
     {
       "parameters": {
         "respondWith": "json",
-        "responseBody": "={{ { ok: true, reference: $json.reference, lead_id: $json.lead_id, summary: $json.parsed.summary } }}",
+        "responseBody": "={{ { ok: true, reference: $json.reference, submission_id: $json.payload.submission_id, lead_id: $json.lead_id, summary: $json.parsed?.summary ?? null } }}",
         "options": {}
       },
       "id": "a1b2c3d4-0042-4000-8000-000000000042",
@@ -1498,6 +1498,17 @@
       "main": [
         [
           {
+            "node": "Respond Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respond Success": {
+      "main": [
+        [
+          {
             "node": "Switch Priority",
             "type": "main",
             "index": 0
@@ -1655,17 +1666,6 @@
         [
           {
             "node": "Log Processing Success",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Log Processing Success": {
-      "main": [
-        [
-          {
-            "node": "Respond Success",
             "type": "main",
             "index": 0
           }

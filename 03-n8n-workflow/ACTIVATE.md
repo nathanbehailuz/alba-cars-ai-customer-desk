@@ -42,6 +42,7 @@ Expect JSON with `reference` like `AC-#####`.
 | --- | --- |
 | **404** | Workflow not Active |
 | **500** + `access to env vars denied` | Still using `$env` — re-import `$vars` JSON + set Variables |
+| **200 empty body**, run still succeeds in Supabase | **Respond Success** was after comms + **Log Processing Success** (PATCH output has no `reference`) or webhook timed out — re-import JSON that responds right after **Attach Lead Id** with `submission_id` |
 | **200 empty body**, log stuck at `processing` | **Check Duplicate Lead** returned `[]` (0 items) and n8n stopped the chain — re-import JSON with `alwaysOutputData` on list GETs |
 | **500** + `Node 'Update Customer' hasn't been executed` | **Resolve Customer Id** read the unused branch — re-import JSON that uses `$input` / `.isExecuted` |
 | **500** + Supabase/OpenAI error | Wrong Variable values / keys |
