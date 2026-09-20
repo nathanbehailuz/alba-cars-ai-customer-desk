@@ -45,6 +45,7 @@ Expect JSON with `reference` like `AC-#####`.
 | **200 empty body**, run still succeeds in Supabase | **Respond Success** was after comms + **Log Processing Success** (PATCH output has no `reference`) or webhook timed out — re-import JSON that responds right after **Attach Lead Id** with `submission_id` |
 | **200 empty body**, log stuck at `processing` | **Check Duplicate Lead** returned `[]` (0 items) and n8n stopped the chain — re-import JSON with `alwaysOutputData` on list GETs |
 | **500** + `Node 'Update Customer' hasn't been executed` | **Resolve Customer Id** read the unused branch — re-import JSON that uses `$input` / `.isExecuted` |
+| **500** + `Customer upsert failed` after **Create Customer** shows `23505` duplicate | **Find Customer** row was a single `{id}` object (not an array) so lookup missed — re-import JSON with fixed **Customer Lookup Result** + upsert **Create Customer** |
 | **500** + Supabase/OpenAI error | Wrong Variable values / keys |
 
 ## Already automated in this repo

@@ -154,7 +154,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const payload = $('Validate Input').first().json.payload;\nconst dup = $('Check Duplicate Lead').first().json;\nconst rows = Array.isArray(dup) ? dup : [];\nif (rows.length && rows[0]?.reference) {\n  return [{ json: { duplicate: true, reference: rows[0].reference, lead_id: rows[0].id, summary: rows[0].ai_summary || 'Already processed', payload } }];\n}\nreturn [{ json: { duplicate: false, payload } }];"
+        "jsCode": "const payload = $('Validate Input').first().json.payload;\nconst dup = $('Check Duplicate Lead').first().json;\nconst row = Array.isArray(dup) ? dup[0] : (dup?.reference || dup?.id ? dup : null);\nif (row?.reference) {\n  return [{ json: { duplicate: true, reference: row.reference, lead_id: row.id, summary: row.ai_summary || 'Already processed', payload } }];\n}\nreturn [{ json: { duplicate: false, payload } }];"
       },
       "id": "a1b2c3d4-0007-4000-8000-000000000007",
       "name": "Evaluate Duplicate",
@@ -257,7 +257,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const payload = $('Prepare Customer Lookup').first().json.payload;\nconst found = $('Find Customer').first().json;\nconst rows = Array.isArray(found) ? found : [];\nconst customerExists = rows.length > 0 && rows[0]?.id;\nreturn [{ json: { payload, customerExists: Boolean(customerExists), customerId: customerExists ? rows[0].id : null } }];"
+        "jsCode": "const payload = $('Prepare Customer Lookup').first().json.payload;\nconst found = $('Find Customer').first().json;\nlet customerId = null;\nif (Array.isArray(found) && found[0]?.id) customerId = found[0].id;\nelse if (found?.id && !found?.error && !found?.code) customerId = found.id;\nreturn [{ json: { payload, customerExists: Boolean(customerId), customerId } }];"
       },
       "id": "a1b2c3d4-0012-4000-8000-000000000012",
       "name": "Customer Lookup Result",
@@ -343,7 +343,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "={{ $vars.SUPABASE_URL }}/rest/v1/alba_customers",
+        "url": "={{ $vars.SUPABASE_URL }}/rest/v1/alba_customers?on_conflict={{ $json.payload.email ? 'email' : 'phone' }}",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
@@ -361,7 +361,7 @@
             },
             {
               "name": "Prefer",
-              "value": "return=representation"
+              "value": "resolution=merge-duplicates,return=representation"
             }
           ]
         },
@@ -382,7 +382,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const ctx = $('Customer Lookup Result').first().json;\nconst payload = ctx.payload;\nlet customerId = ctx.customerId;\nconst direct = $input.first()?.json;\nif (!customerId && direct) {\n  if (Array.isArray(direct) && direct[0]?.id) customerId = direct[0].id;\n  else if (direct?.id) customerId = direct.id;\n}\nif (!customerId && $('Update Customer').isExecuted) {\n  const upd = $('Update Customer').first()?.json;\n  if (Array.isArray(upd) && upd[0]?.id) customerId = upd[0].id;\n  else if (upd?.id) customerId = upd.id;\n}\nif (!customerId && $('Create Customer').isExecuted) {\n  const crt = $('Create Customer').first()?.json;\n  if (Array.isArray(crt) && crt[0]?.id) customerId = crt[0].id;\n  else if (crt?.id) customerId = crt.id;\n}\nif (!customerId) {\n  throw new Error('Customer upsert failed');\n}\nreturn [{ json: { payload, customerId } }];"
+        "jsCode": "function pickCustomerId(val) {\n  if (!val || val.error || val.code) return null;\n  if (Array.isArray(val) && val[0]?.id) return val[0].id;\n  if (val.id) return val.id;\n  return null;\n}\nconst ctx = $('Customer Lookup Result').first().json;\nconst payload = ctx.payload;\nlet customerId = ctx.customerId || pickCustomerId($input.first()?.json);\nif (!customerId && $('Update Customer').isExecuted) {\n  customerId = pickCustomerId($('Update Customer').first()?.json);\n}\nif (!customerId && $('Create Customer').isExecuted) {\n  customerId = pickCustomerId($('Create Customer').first()?.json);\n}\nif (!customerId) {\n  customerId = pickCustomerId($('Find Customer').first()?.json);\n}\nif (!customerId) {\n  throw new Error('Customer upsert failed');\n}\nreturn [{ json: { payload, customerId } }];"
       },
       "id": "a1b2c3d4-0016-4000-8000-000000000016",
       "name": "Resolve Customer Id",
