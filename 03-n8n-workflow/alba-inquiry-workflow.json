@@ -71,17 +71,17 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "={{ $env.SUPABASE_URL }}/rest/v1/alba_processing_log",
+        "url": "={{ $vars.SUPABASE_URL }}/rest/v1/alba_processing_log",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
             {
               "name": "apikey",
-              "value": "={{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+              "value": "={{ $vars.SUPABASE_SERVICE_ROLE_KEY }}"
             },
             {
               "name": "Authorization",
-              "value": "=Bearer {{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+              "value": "=Bearer {{ $vars.SUPABASE_SERVICE_ROLE_KEY }}"
             },
             {
               "name": "Content-Type",
@@ -109,17 +109,17 @@
     {
       "parameters": {
         "method": "GET",
-        "url": "={{ $env.SUPABASE_URL }}/rest/v1/alba_leads?submission_id=eq.{{ $('Validate Input').item.json.payload.submission_id }}&select=id,reference,ai_summary",
+        "url": "={{ $vars.SUPABASE_URL }}/rest/v1/alba_leads?submission_id=eq.{{ $('Validate Input').item.json.payload.submission_id }}&select=id,reference,ai_summary",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
             {
               "name": "apikey",
-              "value": "={{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+              "value": "={{ $vars.SUPABASE_SERVICE_ROLE_KEY }}"
             },
             {
               "name": "Authorization",
-              "value": "=Bearer {{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+              "value": "=Bearer {{ $vars.SUPABASE_SERVICE_ROLE_KEY }}"
             }
           ]
         },
@@ -196,17 +196,17 @@
     {
       "parameters": {
         "method": "GET",
-        "url": "={{ $env.SUPABASE_URL }}/rest/v1/alba_customers?{{ $json.customerFilter }}&select=id",
+        "url": "={{ $vars.SUPABASE_URL }}/rest/v1/alba_customers?{{ $json.customerFilter }}&select=id",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
             {
               "name": "apikey",
-              "value": "={{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+              "value": "={{ $vars.SUPABASE_SERVICE_ROLE_KEY }}"
             },
             {
               "name": "Authorization",
-              "value": "=Bearer {{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+              "value": "=Bearer {{ $vars.SUPABASE_SERVICE_ROLE_KEY }}"
             }
           ]
         },
@@ -261,17 +261,17 @@
     {
       "parameters": {
         "method": "PATCH",
-        "url": "={{ $env.SUPABASE_URL }}/rest/v1/alba_customers?id=eq.{{ $json.customerId }}",
+        "url": "={{ $vars.SUPABASE_URL }}/rest/v1/alba_customers?id=eq.{{ $json.customerId }}",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
             {
               "name": "apikey",
-              "value": "={{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+              "value": "={{ $vars.SUPABASE_SERVICE_ROLE_KEY }}"
             },
             {
               "name": "Authorization",
-              "value": "=Bearer {{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+              "value": "=Bearer {{ $vars.SUPABASE_SERVICE_ROLE_KEY }}"
             },
             {
               "name": "Content-Type",
@@ -298,17 +298,17 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "={{ $env.SUPABASE_URL }}/rest/v1/alba_customers",
+        "url": "={{ $vars.SUPABASE_URL }}/rest/v1/alba_customers",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
             {
               "name": "apikey",
-              "value": "={{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+              "value": "={{ $vars.SUPABASE_SERVICE_ROLE_KEY }}"
             },
             {
               "name": "Authorization",
-              "value": "=Bearer {{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+              "value": "=Bearer {{ $vars.SUPABASE_SERVICE_ROLE_KEY }}"
             },
             {
               "name": "Content-Type",
@@ -345,17 +345,17 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "={{ $env.SUPABASE_URL }}/rest/v1/rpc/alba_next_lead_reference",
+        "url": "={{ $vars.SUPABASE_URL }}/rest/v1/rpc/alba_next_lead_reference",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
             {
               "name": "apikey",
-              "value": "={{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+              "value": "={{ $vars.SUPABASE_SERVICE_ROLE_KEY }}"
             },
             {
               "name": "Authorization",
-              "value": "=Bearer {{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+              "value": "=Bearer {{ $vars.SUPABASE_SERVICE_ROLE_KEY }}"
             },
             {
               "name": "Content-Type",
@@ -394,7 +394,7 @@
           "parameters": [
             {
               "name": "Authorization",
-              "value": "=Bearer {{ $env.OPENAI_API_KEY }}"
+              "value": "=Bearer {{ $vars.OPENAI_API_KEY }}"
             },
             {
               "name": "Content-Type",
@@ -404,7 +404,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ { model: $env.OPENAI_MODEL || 'gpt-5-nano', temperature: 0.2, response_format: { type: 'json_object' }, messages: [ { role: 'system', content: 'You are ALBA CARS lead qualification AI. Return ONLY valid JSON with keys: category, summary, vehicle (object), buying_timeline, buying_intent, urgency, lead_score (0-100), recommended_action, recommended_cta, voice_agent_eligible (boolean), customer_confirmation, sales_brief. Categories: vehicle_purchase, vehicle_search, test_drive, financing, trade_in, vehicle_sale, general_sales_question, spam. Currency AED.' }, { role: 'user', content: JSON.stringify($json.payload) } ] } }}",
+        "jsonBody": "={{ { model: $vars.OPENAI_MODEL || 'gpt-5-nano', temperature: 0.2, response_format: { type: 'json_object' }, messages: [ { role: 'system', content: 'You are ALBA CARS lead qualification AI. Return ONLY valid JSON with keys: category, summary, vehicle (object), buying_timeline, buying_intent, urgency, lead_score (0-100), recommended_action, recommended_cta, voice_agent_eligible (boolean), customer_confirmation, sales_brief. Categories: vehicle_purchase, vehicle_search, test_drive, financing, trade_in, vehicle_sale, general_sales_question, spam. Currency AED.' }, { role: 'user', content: JSON.stringify($json.payload) } ] } }}",
         "options": {}
       },
       "id": "a1b2c3d4-0019-4000-8000-000000000019",
@@ -414,7 +414,7 @@
       "position": [3600, 400],
       "continueOnFail": true,
       "notesInFlow": true,
-      "notes": "OpenAI API credential placeholder: header Bearer {{ $env.OPENAI_API_KEY }} or n8n credential type OpenAI API."
+      "notes": "OpenAI API credential placeholder: header Bearer {{ $vars.OPENAI_API_KEY }} or n8n credential type OpenAI API."
     },
     {
       "parameters": {
@@ -449,17 +449,17 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "={{ $env.SUPABASE_URL }}/rest/v1/alba_processing_log",
+        "url": "={{ $vars.SUPABASE_URL }}/rest/v1/alba_processing_log",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
             {
               "name": "apikey",
-              "value": "={{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+              "value": "={{ $vars.SUPABASE_SERVICE_ROLE_KEY }}"
             },
             {
               "name": "Authorization",
-              "value": "=Bearer {{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+              "value": "=Bearer {{ $vars.SUPABASE_SERVICE_ROLE_KEY }}"
             },
             {
               "name": "Content-Type",
@@ -516,17 +516,17 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "={{ $env.SUPABASE_URL }}/rest/v1/alba_leads",
+        "url": "={{ $vars.SUPABASE_URL }}/rest/v1/alba_leads",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
             {
               "name": "apikey",
-              "value": "={{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+              "value": "={{ $vars.SUPABASE_SERVICE_ROLE_KEY }}"
             },
             {
               "name": "Authorization",
-              "value": "=Bearer {{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+              "value": "=Bearer {{ $vars.SUPABASE_SERVICE_ROLE_KEY }}"
             },
             {
               "name": "Content-Type",
@@ -583,17 +583,17 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "={{ $env.SUPABASE_URL }}/rest/v1/alba_processing_log",
+        "url": "={{ $vars.SUPABASE_URL }}/rest/v1/alba_processing_log",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
             {
               "name": "apikey",
-              "value": "={{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+              "value": "={{ $vars.SUPABASE_SERVICE_ROLE_KEY }}"
             },
             {
               "name": "Authorization",
-              "value": "=Bearer {{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+              "value": "=Bearer {{ $vars.SUPABASE_SERVICE_ROLE_KEY }}"
             },
             {
               "name": "Content-Type",
@@ -724,17 +724,17 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "={{ $env.SUPABASE_URL }}/rest/v1/alba_communications",
+        "url": "={{ $vars.SUPABASE_URL }}/rest/v1/alba_communications",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
             {
               "name": "apikey",
-              "value": "={{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+              "value": "={{ $vars.SUPABASE_SERVICE_ROLE_KEY }}"
             },
             {
               "name": "Authorization",
-              "value": "=Bearer {{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+              "value": "=Bearer {{ $vars.SUPABASE_SERVICE_ROLE_KEY }}"
             },
             {
               "name": "Content-Type",
@@ -748,7 +748,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ { lead_id: $json.lead_id, channel: 'sales_alert', message_type: 'alert', content: $json.parsed.sales_brief || ('Hot lead ' + $json.reference), delivery_status: $env.SALES_ALERT_PROVIDER ? 'pending' : 'skipped', error_details: $env.SALES_ALERT_PROVIDER ? null : 'Sales alert provider not configured' } }}",
+        "jsonBody": "={{ { lead_id: $json.lead_id, channel: 'sales_alert', message_type: 'alert', content: $json.parsed.sales_brief || ('Hot lead ' + $json.reference), delivery_status: $vars.SALES_ALERT_PROVIDER ? 'pending' : 'skipped', error_details: $vars.SALES_ALERT_PROVIDER ? null : 'Sales alert provider not configured' } }}",
         "options": {}
       },
       "id": "a1b2c3d4-0031-4000-8000-000000000031",
@@ -799,17 +799,17 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "={{ $env.SUPABASE_URL }}/rest/v1/alba_communications",
+        "url": "={{ $vars.SUPABASE_URL }}/rest/v1/alba_communications",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
             {
               "name": "apikey",
-              "value": "={{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+              "value": "={{ $vars.SUPABASE_SERVICE_ROLE_KEY }}"
             },
             {
               "name": "Authorization",
-              "value": "=Bearer {{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+              "value": "=Bearer {{ $vars.SUPABASE_SERVICE_ROLE_KEY }}"
             },
             {
               "name": "Content-Type",
@@ -823,7 +823,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ { lead_id: $json.lead_id, channel: 'email', message_type: 'confirmation', content: $json.confirmation, delivery_status: $env.EMAIL_PROVIDER ? 'pending' : 'skipped', error_details: $env.EMAIL_PROVIDER ? null : 'Email provider not configured — body stored for review' } }}",
+        "jsonBody": "={{ { lead_id: $json.lead_id, channel: 'email', message_type: 'confirmation', content: $json.confirmation, delivery_status: $vars.EMAIL_PROVIDER ? 'pending' : 'skipped', error_details: $vars.EMAIL_PROVIDER ? null : 'Email provider not configured — body stored for review' } }}",
         "options": {}
       },
       "id": "a1b2c3d4-0033-4000-8000-000000000033",
@@ -884,17 +884,17 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "={{ $env.SUPABASE_URL }}/rest/v1/alba_communications",
+        "url": "={{ $vars.SUPABASE_URL }}/rest/v1/alba_communications",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
             {
               "name": "apikey",
-              "value": "={{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+              "value": "={{ $vars.SUPABASE_SERVICE_ROLE_KEY }}"
             },
             {
               "name": "Authorization",
-              "value": "=Bearer {{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+              "value": "=Bearer {{ $vars.SUPABASE_SERVICE_ROLE_KEY }}"
             },
             {
               "name": "Content-Type",
@@ -908,7 +908,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ { lead_id: $json.lead_id, channel: 'whatsapp', message_type: 'confirmation', content: $json.confirmation, delivery_status: $env.WHATSAPP_PROVIDER ? 'pending' : 'skipped', error_details: $env.WHATSAPP_PROVIDER ? null : 'WhatsApp provider not configured — body stored for review' } }}",
+        "jsonBody": "={{ { lead_id: $json.lead_id, channel: 'whatsapp', message_type: 'confirmation', content: $json.confirmation, delivery_status: $vars.WHATSAPP_PROVIDER ? 'pending' : 'skipped', error_details: $vars.WHATSAPP_PROVIDER ? null : 'WhatsApp provider not configured — body stored for review' } }}",
         "options": {}
       },
       "id": "a1b2c3d4-0036-4000-8000-000000000036",
@@ -960,17 +960,17 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "={{ $env.SUPABASE_URL }}/rest/v1/alba_voice_agent_queue",
+        "url": "={{ $vars.SUPABASE_URL }}/rest/v1/alba_voice_agent_queue",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
             {
               "name": "apikey",
-              "value": "={{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+              "value": "={{ $vars.SUPABASE_SERVICE_ROLE_KEY }}"
             },
             {
               "name": "Authorization",
-              "value": "=Bearer {{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+              "value": "=Bearer {{ $vars.SUPABASE_SERVICE_ROLE_KEY }}"
             },
             {
               "name": "Content-Type",
@@ -1007,17 +1007,17 @@
     {
       "parameters": {
         "method": "PATCH",
-        "url": "={{ $env.SUPABASE_URL }}/rest/v1/alba_processing_log?submission_id=eq.{{ $json.payload.submission_id }}",
+        "url": "={{ $vars.SUPABASE_URL }}/rest/v1/alba_processing_log?submission_id=eq.{{ $json.payload.submission_id }}",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
             {
               "name": "apikey",
-              "value": "={{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+              "value": "={{ $vars.SUPABASE_SERVICE_ROLE_KEY }}"
             },
             {
               "name": "Authorization",
-              "value": "=Bearer {{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+              "value": "=Bearer {{ $vars.SUPABASE_SERVICE_ROLE_KEY }}"
             },
             {
               "name": "Content-Type",

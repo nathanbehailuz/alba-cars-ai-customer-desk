@@ -2,40 +2,48 @@
 
 The export in this folder is already written. You only need to **import + turn it on** in n8n Cloud so the Production webhook stops returning 404.
 
+## Critical (n8n Cloud)
+
+Cloud **blocks** `$env.*` (“access to env vars denied”). This workflow uses **`$vars.*`**.
+
+Create variables under **Personal → Variables** (or Overview → Variables):
+
+| Key | Value |
+| --- | --- |
+| `OPENAI_API_KEY` | your `sk-…` key |
+| `OPENAI_MODEL` | `gpt-5-nano` |
+| `SUPABASE_URL` | `https://gvtprsfkvhdwbfvwynog.supabase.co` |
+| `SUPABASE_SERVICE_ROLE_KEY` | Supabase **service_role** JWT (`eyJ…` with role service_role) |
+
+Optional (if used by nodes): `EMAIL_PROVIDER`, `WHATSAPP_PROVIDER`, `SALES_ALERT_PROVIDER`.
+
 ## Steps (n8n Cloud)
 
-1. Open [https://albacarsdemo.app.n8n.cloud](https://albacarsdemo.app.n8n.cloud) (or your n8n host) and sign in.
-2. **Workflows** → **Add workflow** → **⋯** / **Import from File** → choose  
-   `03-n8n-workflow/alba-inquiry-workflow.json`  
-   (If you already imported an older copy, delete it or re-import so table names are `alba_*`.)
-3. Open the workflow. Confirm the **Webhook** node path is `alba-inquiry`.
-4. Set environment variables (n8n → Settings → Variables, or workflow env):
-   - `OPENAI_API_KEY`
-   - `OPENAI_MODEL` = `gpt-5-nano`
-   - `SUPABASE_URL` = `https://gvtprsfkvhdwbfvwynog.supabase.co`
-   - `SUPABASE_SERVICE_ROLE_KEY` = the **service_role** JWT from Supabase (starts with `eyJ…`, not `sk-…`, not the anon key)
-5. Click **Save**, then toggle **Active** (top right) to **ON**.
-6. Open the Webhook node → copy **Production URL**  
-   (should look like `https://albacarsdemo.app.n8n.cloud/webhook/alba-inquiry`).
-7. Put that URL in `01-web-app/.env.local` as `N8N_WEBHOOK_URL=…` and restart `npm run dev`.
+1. Open [https://albacarsdemo.app.n8n.cloud](https://albacarsdemo.app.n8n.cloud) and sign in.
+2. Add the **Variables** above.
+3. **Workflows** → import `03-n8n-workflow/alba-inquiry-workflow.json`  
+   (If an older copy exists, delete it or re-import so expressions use `$vars`, not `$env`.)
+4. Confirm Webhook path is `alba-inquiry`.
+5. **Save** → toggle **Active / Published** ON.
+6. Copy **Production** webhook URL into `01-web-app/.env.local` as `N8N_WEBHOOK_URL`.
+7. Restart `npm run dev` if the app is running.
 
 ## Quick test
 
 ```bash
-jq .payload sample-payloads/01-high-intent-rav4.json | \
-  curl -sS -X POST "$N8N_WEBHOOK_URL" -H 'Content-Type: application/json' -d @-
+curl -sS -X POST "$N8N_WEBHOOK_URL" \
+  -H 'Content-Type: application/json' \
+  -d '{"submission_id":"33333333-3333-4333-8333-333333333301","intent":"buy","category_seed":"vehicle_purchase","name":"Test","email":"test@example.com","preferred_channel":"email","message":"Toyota RAV4 under 130000","contact_consent":true,"whatsapp_consent":false,"voice_consent":false,"page_context":{"source":"curl","page_type":"buy","submitted_at":"2026-03-20T12:00:00.000Z"}}'
 ```
 
-Expect JSON with `reference` like `AC-#####`. A **404** means the workflow is still inactive or the URL is the Test URL while nothing is listening.
+Expect JSON with `reference` like `AC-#####`.
+
+| Symptom | Meaning |
+| --- | --- |
+| **404** | Workflow not Active |
+| **500** + `access to env vars denied` | Still using `$env` — re-import `$vars` JSON + set Variables |
+| **500** + Supabase/OpenAI error | Wrong Variable values / keys |
 
 ## Already automated in this repo
 
-You do **not** have to wait on n8n for a working demo:
-
-- `01-web-app` local pipeline (`src/lib/pipeline.ts`) runs the same flow: validate → GPT → `alba_*` tables → messages.
-- Set in `01-web-app/.env.local`:
-  - `INQUIRY_PIPELINE=local` (or leave `auto`: tries n8n, falls back to local)
-  - `OPENAI_API_KEY`, `OPENAI_MODEL=gpt-5-nano`
-  - `NEXT_PUBLIC_SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` (**must** be the `eyJ…` service_role secret)
-
-For the **assignment hand-in**, still activate n8n and include the live instance / exported JSON per [docs/task.md](../docs/task.md).
+In-app fallback: `01-web-app/src/lib/pipeline.ts` with `INQUIRY_PIPELINE=auto|local`.
