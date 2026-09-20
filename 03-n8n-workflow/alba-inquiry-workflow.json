@@ -12,7 +12,10 @@
       "name": "Inquiry Webhook",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
-      "position": [0, 400],
+      "position": [
+        0,
+        400
+      ],
       "webhookId": "alba-inquiry-webhook-id"
     },
     {
@@ -23,7 +26,10 @@
       "name": "Validate Input",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [240, 400]
+      "position": [
+        240,
+        400
+      ]
     },
     {
       "parameters": {
@@ -52,7 +58,10 @@
       "name": "IF Validation OK",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
-      "position": [480, 400]
+      "position": [
+        480,
+        400
+      ]
     },
     {
       "parameters": {
@@ -66,7 +75,10 @@
       "name": "Respond Validation Error",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
-      "position": [720, 560]
+      "position": [
+        720,
+        560
+      ]
     },
     {
       "parameters": {
@@ -102,9 +114,13 @@
       "name": "Log Processing Start",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [720, 320],
+      "position": [
+        720,
+        320
+      ],
       "notesInFlow": true,
-      "notes": "Supabase URL + service role via $env (see README). Credential name: Supabase URL."
+      "notes": "Supabase URL + service role via $env (see README). Credential name: Supabase URL.",
+      "alwaysOutputData": true
     },
     {
       "parameters": {
@@ -129,8 +145,12 @@
       "name": "Check Duplicate Lead",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [960, 320],
-      "continueOnFail": true
+      "position": [
+        960,
+        320
+      ],
+      "continueOnFail": true,
+      "alwaysOutputData": true
     },
     {
       "parameters": {
@@ -140,7 +160,10 @@
       "name": "Evaluate Duplicate",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [1200, 320]
+      "position": [
+        1200,
+        320
+      ]
     },
     {
       "parameters": {
@@ -169,7 +192,10 @@
       "name": "IF Duplicate Lead",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
-      "position": [1440, 320]
+      "position": [
+        1440,
+        320
+      ]
     },
     {
       "parameters": {
@@ -181,7 +207,10 @@
       "name": "Respond Duplicate",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
-      "position": [1680, 200]
+      "position": [
+        1680,
+        200
+      ]
     },
     {
       "parameters": {
@@ -191,7 +220,10 @@
       "name": "Prepare Customer Lookup",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [1680, 400]
+      "position": [
+        1680,
+        400
+      ]
     },
     {
       "parameters": {
@@ -216,8 +248,12 @@
       "name": "Find Customer",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [1920, 400],
-      "continueOnFail": true
+      "position": [
+        1920,
+        400
+      ],
+      "continueOnFail": true,
+      "alwaysOutputData": true
     },
     {
       "parameters": {
@@ -227,7 +263,10 @@
       "name": "Customer Lookup Result",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [2160, 400]
+      "position": [
+        2160,
+        400
+      ]
     },
     {
       "parameters": {
@@ -256,7 +295,10 @@
       "name": "IF Customer Exists",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
-      "position": [2400, 400]
+      "position": [
+        2400,
+        400
+      ]
     },
     {
       "parameters": {
@@ -292,7 +334,10 @@
       "name": "Update Customer",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [2640, 280],
+      "position": [
+        2640,
+        280
+      ],
       "continueOnFail": true
     },
     {
@@ -329,7 +374,10 @@
       "name": "Create Customer",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [2640, 520],
+      "position": [
+        2640,
+        520
+      ],
       "continueOnFail": true
     },
     {
@@ -340,7 +388,10 @@
       "name": "Resolve Customer Id",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [2880, 400]
+      "position": [
+        2880,
+        400
+      ]
     },
     {
       "parameters": {
@@ -372,7 +423,10 @@
       "name": "Get Lead Reference RPC",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [3120, 400],
+      "position": [
+        3120,
+        400
+      ],
       "continueOnFail": true
     },
     {
@@ -383,7 +437,10 @@
       "name": "Assign Reference",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [3360, 400]
+      "position": [
+        3360,
+        400
+      ]
     },
     {
       "parameters": {
@@ -411,7 +468,10 @@
       "name": "OpenAI Classify",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [3600, 400],
+      "position": [
+        3600,
+        400
+      ],
       "continueOnFail": true,
       "notesInFlow": true,
       "notes": "OpenAI API credential placeholder: header Bearer {{ $vars.OPENAI_API_KEY }} or n8n credential type OpenAI API."
@@ -444,7 +504,10 @@
       "name": "IF OpenAI Failed",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
-      "position": [3840, 400]
+      "position": [
+        3840,
+        400
+      ]
     },
     {
       "parameters": {
@@ -480,18 +543,24 @@
       "name": "Log OpenAI Failure",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [4080, 560],
+      "position": [
+        4080,
+        560
+      ],
       "continueOnFail": true
     },
     {
       "parameters": {
-        "jsCode": "const ctx = $('Assign Reference').first().json;\nconst ref = ctx.reference;\nconst payload = ctx.payload;\nconst fallback = {\n  category: payload.category_seed || 'general_sales_question',\n  summary: payload.message || 'Website inquiry received.',\n  vehicle: {},\n  buying_timeline: 'unknown',\n  buying_intent: 'medium',\n  urgency: 'medium',\n  lead_score: 45,\n  recommended_action: 'Review inquiry and contact customer.',\n  recommended_cta: 'manual_follow_up',\n  voice_agent_eligible: false,\n  customer_confirmation: `Thanks for contacting ALBA CARS. We received your inquiry. Reference ${ref}.`,\n  sales_brief: `Fallback lead ${ref} — AI classification unavailable.`\n};\nreturn [{ json: { ...ctx, aiParsed: fallback, aiRaw: { fallback: true, error: $input.first().json } } }];"
+        "jsCode": "const ctx = $('Assign Reference').first().json;\nconst ref = ctx.reference;\nconst payload = ctx.payload;\nconst fallback = {\n  category: payload.category_seed || 'general_sales_question',\n  summary: payload.message || 'Website inquiry received.',\n  vehicle: {},\n  buying_timeline: 'unknown',\n  buying_intent: 'medium',\n  urgency: 'medium',\n  lead_score: 45,\n  recommended_action: 'Review inquiry and contact customer.',\n  recommended_cta: 'manual_follow_up',\n  voice_agent_eligible: false,\n  customer_confirmation: `Thanks for contacting ALBA CARS. We received your inquiry. Reference ${ref}.`,\n  sales_brief: `Fallback lead ${ref} \u2014 AI classification unavailable.`\n};\nreturn [{ json: { ...ctx, aiParsed: fallback, aiRaw: { fallback: true, error: $input.first().json } } }];"
       },
       "id": "a1b2c3d4-0022-4000-8000-000000000022",
       "name": "AI Fallback Template",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [4320, 560]
+      "position": [
+        4320,
+        560
+      ]
     },
     {
       "parameters": {
@@ -501,7 +570,10 @@
       "name": "Extract OpenAI JSON",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [4080, 280]
+      "position": [
+        4080,
+        280
+      ]
     },
     {
       "parameters": {
@@ -511,7 +583,10 @@
       "name": "Parse AI and Apply Rules",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [4560, 400]
+      "position": [
+        4560,
+        400
+      ]
     },
     {
       "parameters": {
@@ -547,7 +622,10 @@
       "name": "Insert Lead",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [4800, 400],
+      "position": [
+        4800,
+        400
+      ],
       "continueOnFail": true
     },
     {
@@ -578,7 +656,10 @@
       "name": "IF Insert Lead Failed",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
-      "position": [5040, 400]
+      "position": [
+        5040,
+        400
+      ]
     },
     {
       "parameters": {
@@ -614,7 +695,10 @@
       "name": "Log Insert Lead Failed",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [5280, 560],
+      "position": [
+        5280,
+        560
+      ],
       "continueOnFail": true
     },
     {
@@ -629,7 +713,10 @@
       "name": "Respond Insert Failed",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
-      "position": [5520, 560]
+      "position": [
+        5520,
+        560
+      ]
     },
     {
       "parameters": {
@@ -639,7 +726,10 @@
       "name": "Attach Lead Id",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [5280, 320]
+      "position": [
+        5280,
+        320
+      ]
     },
     {
       "parameters": {
@@ -719,7 +809,10 @@
       "name": "Switch Priority",
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3.2,
-      "position": [5520, 320]
+      "position": [
+        5520,
+        320
+      ]
     },
     {
       "parameters": {
@@ -755,7 +848,10 @@
       "name": "Insert Sales Alert",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [5760, 160],
+      "position": [
+        5760,
+        160
+      ],
       "continueOnFail": true
     },
     {
@@ -794,7 +890,10 @@
       "name": "IF Email Channel",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
-      "position": [6000, 320]
+      "position": [
+        6000,
+        320
+      ]
     },
     {
       "parameters": {
@@ -823,14 +922,17 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ { lead_id: $json.lead_id, channel: 'email', message_type: 'confirmation', content: $json.confirmation, delivery_status: $vars.EMAIL_PROVIDER ? 'pending' : 'skipped', error_details: $vars.EMAIL_PROVIDER ? null : 'Email provider not configured — body stored for review' } }}",
+        "jsonBody": "={{ { lead_id: $json.lead_id, channel: 'email', message_type: 'confirmation', content: $json.confirmation, delivery_status: $vars.EMAIL_PROVIDER ? 'pending' : 'skipped', error_details: $vars.EMAIL_PROVIDER ? null : 'Email provider not configured \u2014 body stored for review' } }}",
         "options": {}
       },
       "id": "a1b2c3d4-0033-4000-8000-000000000033",
       "name": "Insert Email Communication",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [6240, 240],
+      "position": [
+        6240,
+        240
+      ],
       "continueOnFail": true
     },
     {
@@ -841,7 +943,10 @@
       "name": "Pass Through After Email",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [6240, 400]
+      "position": [
+        6240,
+        400
+      ]
     },
     {
       "parameters": {
@@ -879,7 +984,10 @@
       "name": "IF WhatsApp Channel",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
-      "position": [6480, 320]
+      "position": [
+        6480,
+        320
+      ]
     },
     {
       "parameters": {
@@ -908,14 +1016,17 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ { lead_id: $json.lead_id, channel: 'whatsapp', message_type: 'confirmation', content: $json.confirmation, delivery_status: $vars.WHATSAPP_PROVIDER ? 'pending' : 'skipped', error_details: $vars.WHATSAPP_PROVIDER ? null : 'WhatsApp provider not configured — body stored for review' } }}",
+        "jsonBody": "={{ { lead_id: $json.lead_id, channel: 'whatsapp', message_type: 'confirmation', content: $json.confirmation, delivery_status: $vars.WHATSAPP_PROVIDER ? 'pending' : 'skipped', error_details: $vars.WHATSAPP_PROVIDER ? null : 'WhatsApp provider not configured \u2014 body stored for review' } }}",
         "options": {}
       },
       "id": "a1b2c3d4-0036-4000-8000-000000000036",
       "name": "Insert WhatsApp Communication",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [6720, 240],
+      "position": [
+        6720,
+        240
+      ],
       "continueOnFail": true
     },
     {
@@ -926,7 +1037,10 @@
       "name": "Pass Through After WhatsApp",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [6720, 400]
+      "position": [
+        6720,
+        400
+      ]
     },
     {
       "parameters": {
@@ -955,7 +1069,10 @@
       "name": "IF Voice Eligible",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
-      "position": [6960, 320]
+      "position": [
+        6960,
+        320
+      ]
     },
     {
       "parameters": {
@@ -991,7 +1108,10 @@
       "name": "Insert Voice Agent Queue",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [7200, 240],
+      "position": [
+        7200,
+        240
+      ],
       "continueOnFail": true
     },
     {
@@ -1002,7 +1122,10 @@
       "name": "Pass Through After Voice",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [7200, 400]
+      "position": [
+        7200,
+        400
+      ]
     },
     {
       "parameters": {
@@ -1038,7 +1161,10 @@
       "name": "Log Processing Success",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [7440, 320],
+      "position": [
+        7440,
+        320
+      ],
       "continueOnFail": true
     },
     {
@@ -1051,151 +1177,500 @@
       "name": "Respond Success",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
-      "position": [7680, 320]
+      "position": [
+        7680,
+        320
+      ]
     }
   ],
   "connections": {
     "Inquiry Webhook": {
-      "main": [[{ "node": "Validate Input", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Validate Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Validate Input": {
-      "main": [[{ "node": "IF Validation OK", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "IF Validation OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "IF Validation OK": {
       "main": [
-        [{ "node": "Log Processing Start", "type": "main", "index": 0 }],
-        [{ "node": "Respond Validation Error", "type": "main", "index": 0 }]
+        [
+          {
+            "node": "Log Processing Start",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond Validation Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Log Processing Start": {
-      "main": [[{ "node": "Check Duplicate Lead", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Check Duplicate Lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Check Duplicate Lead": {
-      "main": [[{ "node": "Evaluate Duplicate", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Evaluate Duplicate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Evaluate Duplicate": {
-      "main": [[{ "node": "IF Duplicate Lead", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "IF Duplicate Lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "IF Duplicate Lead": {
       "main": [
-        [{ "node": "Respond Duplicate", "type": "main", "index": 0 }],
-        [{ "node": "Prepare Customer Lookup", "type": "main", "index": 0 }]
+        [
+          {
+            "node": "Respond Duplicate",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Prepare Customer Lookup",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Prepare Customer Lookup": {
-      "main": [[{ "node": "Find Customer", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Find Customer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Find Customer": {
-      "main": [[{ "node": "Customer Lookup Result", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Customer Lookup Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Customer Lookup Result": {
-      "main": [[{ "node": "IF Customer Exists", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "IF Customer Exists",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "IF Customer Exists": {
       "main": [
-        [{ "node": "Update Customer", "type": "main", "index": 0 }],
-        [{ "node": "Create Customer", "type": "main", "index": 0 }]
+        [
+          {
+            "node": "Update Customer",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Create Customer",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Update Customer": {
-      "main": [[{ "node": "Resolve Customer Id", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Resolve Customer Id",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Create Customer": {
-      "main": [[{ "node": "Resolve Customer Id", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Resolve Customer Id",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Resolve Customer Id": {
-      "main": [[{ "node": "Get Lead Reference RPC", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Get Lead Reference RPC",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Get Lead Reference RPC": {
-      "main": [[{ "node": "Assign Reference", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Assign Reference",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Assign Reference": {
-      "main": [[{ "node": "OpenAI Classify", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "OpenAI Classify",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "OpenAI Classify": {
-      "main": [[{ "node": "IF OpenAI Failed", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "IF OpenAI Failed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "IF OpenAI Failed": {
       "main": [
-        [{ "node": "Log OpenAI Failure", "type": "main", "index": 0 }],
-        [{ "node": "Extract OpenAI JSON", "type": "main", "index": 0 }]
+        [
+          {
+            "node": "Log OpenAI Failure",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Extract OpenAI JSON",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Log OpenAI Failure": {
-      "main": [[{ "node": "AI Fallback Template", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "AI Fallback Template",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "AI Fallback Template": {
-      "main": [[{ "node": "Parse AI and Apply Rules", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Parse AI and Apply Rules",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Extract OpenAI JSON": {
-      "main": [[{ "node": "Parse AI and Apply Rules", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Parse AI and Apply Rules",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Parse AI and Apply Rules": {
-      "main": [[{ "node": "Insert Lead", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Insert Lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Insert Lead": {
-      "main": [[{ "node": "IF Insert Lead Failed", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "IF Insert Lead Failed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "IF Insert Lead Failed": {
       "main": [
-        [{ "node": "Log Insert Lead Failed", "type": "main", "index": 0 }],
-        [{ "node": "Attach Lead Id", "type": "main", "index": 0 }]
+        [
+          {
+            "node": "Log Insert Lead Failed",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Attach Lead Id",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Log Insert Lead Failed": {
-      "main": [[{ "node": "Respond Insert Failed", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Respond Insert Failed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Attach Lead Id": {
-      "main": [[{ "node": "Switch Priority", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Switch Priority",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Switch Priority": {
       "main": [
-        [{ "node": "Insert Sales Alert", "type": "main", "index": 0 }],
-        [{ "node": "IF Email Channel", "type": "main", "index": 0 }],
-        [{ "node": "IF Email Channel", "type": "main", "index": 0 }]
+        [
+          {
+            "node": "Insert Sales Alert",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "IF Email Channel",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "IF Email Channel",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Insert Sales Alert": {
-      "main": [[{ "node": "IF Email Channel", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "IF Email Channel",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "IF Email Channel": {
       "main": [
-        [{ "node": "Insert Email Communication", "type": "main", "index": 0 }],
-        [{ "node": "Pass Through After Email", "type": "main", "index": 0 }]
+        [
+          {
+            "node": "Insert Email Communication",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Pass Through After Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Insert Email Communication": {
-      "main": [[{ "node": "Pass Through After Email", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Pass Through After Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Pass Through After Email": {
-      "main": [[{ "node": "IF WhatsApp Channel", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "IF WhatsApp Channel",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "IF WhatsApp Channel": {
       "main": [
-        [{ "node": "Insert WhatsApp Communication", "type": "main", "index": 0 }],
-        [{ "node": "Pass Through After WhatsApp", "type": "main", "index": 0 }]
+        [
+          {
+            "node": "Insert WhatsApp Communication",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Pass Through After WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Insert WhatsApp Communication": {
-      "main": [[{ "node": "Pass Through After WhatsApp", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Pass Through After WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Pass Through After WhatsApp": {
-      "main": [[{ "node": "IF Voice Eligible", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "IF Voice Eligible",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "IF Voice Eligible": {
       "main": [
-        [{ "node": "Insert Voice Agent Queue", "type": "main", "index": 0 }],
-        [{ "node": "Pass Through After Voice", "type": "main", "index": 0 }]
+        [
+          {
+            "node": "Insert Voice Agent Queue",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Pass Through After Voice",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Insert Voice Agent Queue": {
-      "main": [[{ "node": "Pass Through After Voice", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Pass Through After Voice",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Pass Through After Voice": {
-      "main": [[{ "node": "Log Processing Success", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Log Processing Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Log Processing Success": {
-      "main": [[{ "node": "Respond Success", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Respond Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "pinData": {},
