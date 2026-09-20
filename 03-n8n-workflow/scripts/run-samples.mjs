@@ -43,11 +43,7 @@ customer_confirmation, sales_brief.
 Categories: vehicle_purchase, vehicle_search, test_drive, financing, trade_in, vehicle_sale, general_sales_question, spam.
 Currency AED. Brand voice: professional Dubai dealership.
 
-customer_confirmation MUST follow this structure (plain text, not markdown):
-1) Thank them for reaching out to ALBA CARS (use their first name if provided).
-2) Say we have noted their interest, in plain language based on the inquiry (e.g. buy a car, trade-in, sell their vehicle, book a test drive, financing, find a car, or a general question) and include 1–2 concrete details from their message (model, budget, timeline).
-3) End with one clear action item — what ALBA will do next (advisor follow-up, share appointment link ${APPOINTMENT_URL}, expect a call, etc.).
-Keep under ~120 words. If a reference like AC-##### is in the payload, mention it once.`;
+customer_confirmation must be a short natural email/WhatsApp message in plain prose only — never numbered lists like 1) 2), never markdown bullets. In flowing sentences: thank them for reaching out to ALBA CARS (use first name if provided); say we have noted their interest in plain language (buy a car, trade-in, sell, test drive, financing, find a car, or a general question) with 1–2 concrete details from their message; end with one clear next step (advisor follow-up, appointment link ${APPOINTMENT_URL}, expect a call). Under ~120 words. Mention the inquiry reference (AC-#####) once if present.`;
 
 async function sb(path, { method = "GET", body, prefer } = {}) {
   const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
