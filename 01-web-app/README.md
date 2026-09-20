@@ -2,10 +2,11 @@
 
 Public multi-page mimic of [albacars.ae](https://albacars.ae/) with the **inquiry desk** replacing the WhatsApp bubble.
 
-## Stack (planned)
+## Stack
 
-- Next.js (App Router) + TypeScript
-- Posts inquiries to the n8n webhook (`NEXT_PUBLIC_N8N_WEBHOOK_URL`)
+- Next.js 15 (App Router) + TypeScript + Tailwind
+- Posts inquiries to `/api/inquiry` → n8n webhook (`N8N_WEBHOOK_URL` / `NEXT_PUBLIC_N8N_WEBHOOK_URL`)
+- Stub mode when webhook env is unset (returns a fake `AC-#####` for UI demos)
 
 ## Run
 
@@ -16,19 +17,24 @@ npm install
 npm run dev
 ```
 
+Open [http://localhost:3000](http://localhost:3000).
+
 ## Pages
 
-- `/` Home
-- `/buy` Inventory (mocked)
-- `/sell` Sell / trade-in
-- `/finance` Financing
+| Route | Purpose |
+| --- | --- |
+| `/` | Home hero, deals, trust strip |
+| `/buy` | Mocked inventory + filters; `?vehicle=` attaches context |
+| `/sell` | Sell / trade-in CTA into widget |
+| `/finance` | Finance eligibility CTA into widget |
+
+## Verify
+
+1. No WhatsApp bubble as primary contact — gold **How can we help?** desk bottom-right.
+2. Six intents → form validation (email or phone; channel rules; consent).
+3. From `/buy?vehicle=veh-rav4-2023`, submit — payload includes vehicle context.
+4. With webhook unset, success screen still shows a reference (stub).
 
 ## Env
 
 See root [`.env.example`](../.env.example). Never commit secrets.
-
-## Verify
-
-1. Open Home — brand hero, nav, no WhatsApp bubble as primary CTA.
-2. Open inquiry desk → pick intent → submit with email or phone.
-3. Network tab shows POST to n8n webhook (or mock during local stub).
