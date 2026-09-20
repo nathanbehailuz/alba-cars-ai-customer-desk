@@ -842,7 +842,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ { lead_id: $json.lead_id, channel: 'sales_alert', message_type: 'alert', content: $json.parsed.sales_brief || ('Hot lead ' + $json.reference), delivery_status: $vars.SALES_ALERT_PROVIDER ? 'pending' : 'skipped', error_details: $vars.SALES_ALERT_PROVIDER ? null : 'Sales alert provider not configured' } }}",
+        "jsonBody": "={{ (() => { const j = $('Attach Lead Id').first().json; return { lead_id: j.lead_id, channel: 'sales_alert', message_type: 'alert', content: j.parsed?.sales_brief || ('Hot lead ' + j.reference), delivery_status: $vars.SALES_ALERT_PROVIDER ? 'pending' : 'skipped', error_details: $vars.SALES_ALERT_PROVIDER ? null : 'Sales alert provider not configured' }; })() }}",
         "options": {}
       },
       "id": "a1b2c3d4-0031-4000-8000-000000000031",
@@ -865,8 +865,8 @@
           },
           "conditions": [
             {
-              "id": "email-ch",
-              "leftValue": "={{ $json.payload.preferred_channel }}",
+              "id": "IF Email Channel-0",
+              "leftValue": "={{ $('Attach Lead Id').first().json.payload.preferred_channel }}",
               "rightValue": "email",
               "operator": {
                 "type": "string",
@@ -874,8 +874,8 @@
               }
             },
             {
-              "id": "both-ch",
-              "leftValue": "={{ $json.payload.preferred_channel }}",
+              "id": "IF Email Channel-1",
+              "leftValue": "={{ $('Attach Lead Id').first().json.payload.preferred_channel }}",
               "rightValue": "both",
               "operator": {
                 "type": "string",
@@ -923,7 +923,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ { lead_id: $json.lead_id, channel: 'email', message_type: 'confirmation', content: $json.confirmation, delivery_status: $vars.EMAIL_PROVIDER ? 'pending' : 'skipped', error_details: $vars.EMAIL_PROVIDER ? null : 'Email provider not configured — body stored for review' } }}",
+        "jsonBody": "={{ (() => { const j = $('Attach Lead Id').first().json; return { lead_id: j.lead_id, channel: 'email', message_type: 'confirmation', content: j.confirmation, delivery_status: $vars.EMAIL_PROVIDER ? 'pending' : 'skipped', error_details: $vars.EMAIL_PROVIDER ? null : 'Email provider not configured — body stored for review' }; })() }}",
         "options": {}
       },
       "id": "a1b2c3d4-0033-4000-8000-000000000033",
@@ -959,8 +959,8 @@
           },
           "conditions": [
             {
-              "id": "wa-ch",
-              "leftValue": "={{ $json.payload.preferred_channel }}",
+              "id": "IF WhatsApp Channel-0",
+              "leftValue": "={{ $('Attach Lead Id').first().json.payload.preferred_channel }}",
               "rightValue": "whatsapp",
               "operator": {
                 "type": "string",
@@ -968,8 +968,8 @@
               }
             },
             {
-              "id": "both-wa",
-              "leftValue": "={{ $json.payload.preferred_channel }}",
+              "id": "IF WhatsApp Channel-1",
+              "leftValue": "={{ $('Attach Lead Id').first().json.payload.preferred_channel }}",
               "rightValue": "both",
               "operator": {
                 "type": "string",
@@ -1017,7 +1017,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ { lead_id: $json.lead_id, channel: 'whatsapp', message_type: 'confirmation', content: $json.confirmation, delivery_status: $vars.WHATSAPP_PROVIDER ? 'pending' : 'skipped', error_details: $vars.WHATSAPP_PROVIDER ? null : 'WhatsApp provider not configured — body stored for review' } }}",
+        "jsonBody": "={{ (() => { const j = $('Attach Lead Id').first().json; return { lead_id: j.lead_id, channel: 'whatsapp', message_type: 'confirmation', content: j.confirmation, delivery_status: $vars.WHATSAPP_PROVIDER ? 'pending' : 'skipped', error_details: $vars.WHATSAPP_PROVIDER ? null : 'WhatsApp provider not configured — body stored for review' }; })() }}",
         "options": {}
       },
       "id": "a1b2c3d4-0036-4000-8000-000000000036",
@@ -1181,6 +1181,19 @@
       "position": [
         7680,
         320
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return [$('Attach Lead Id').first()];"
+      },
+      "id": "a1b2c3d4-0031-4000-8000-0000000000aa",
+      "name": "Pass Through After Sales Alert",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5880,
+        160
       ]
     }
   ],
@@ -1546,7 +1559,7 @@
       "main": [
         [
           {
-            "node": "IF Email Channel",
+            "node": "Pass Through After Sales Alert",
             "type": "main",
             "index": 0
           }
@@ -1667,6 +1680,17 @@
         [
           {
             "node": "Log Processing Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pass Through After Sales Alert": {
+      "main": [
+        [
+          {
+            "node": "IF Email Channel",
             "type": "main",
             "index": 0
           }
