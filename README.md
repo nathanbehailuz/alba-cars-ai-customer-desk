@@ -39,7 +39,7 @@ Stable production aliases (use these):
 | n8n | https://albacarsdemo.app.n8n.cloud (Active; path `alba-inquiry`) |
 | Repository | https://github.com/nathanbehailuz/alba-cars-ai-customer-desk |
 
-Vercel also shows per-deployment URLs like `*-natecodes-projects.vercel.app` and branch URLs like `*-git-main-*` — those are automatic; they are not the README links. Recent Git deploys failed until each project’s **Root Directory** was set to `01-web-app` / `02-dashboard` (monorepo). The `-dun` / `alba-cars-web` aliases still served the last successful deploy.
+Vercel also creates temporary per-deployment hostnames (long `*-natecodes-projects.vercel.app` URLs) — ignore those for sharing. Production aliases above are the stable links.
 
 ## Security
 
