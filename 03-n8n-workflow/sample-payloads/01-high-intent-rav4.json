@@ -1,0 +1,25 @@
+{
+  "name": "high_intent_rav4",
+  "description": "High-intent buyer — Toyota RAV4 under AED 130k",
+  "payload": {
+    "submission_id": "11111111-1111-4111-8111-111111111101",
+    "intent": "buy",
+    "category_seed": "vehicle_purchase",
+    "name": "Sara Al Mansoori",
+    "email": "sara.demo@example.com",
+    "phone": "+971501110001",
+    "preferred_channel": "both",
+    "message": "Looking for a 2023 or newer Toyota RAV4 under AED 130,000. Want to buy this month.",
+    "contact_consent": true,
+    "whatsapp_consent": true,
+    "voice_consent": true,
+    "page_context": {
+      "source": "sample-pack",
+      "page_url": "http://localhost:3000/buy?vehicle=veh-rav4-2023",
+      "page_type": "vehicle",
+      "vehicle_id": "veh-rav4-2023",
+      "vehicle_name": "2023 Toyota RAV4",
+      "submitted_at": "2026-03-20T10:00:00.000Z"
+    }
+  }
+}

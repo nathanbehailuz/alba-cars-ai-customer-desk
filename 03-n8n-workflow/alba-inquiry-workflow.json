@@ -1,0 +1,1216 @@
+{
+  "name": "ALBA CARS Inquiry Desk",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "alba-inquiry",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "a1b2c3d4-0001-4000-8000-000000000001",
+      "name": "Inquiry Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [0, 400],
+      "webhookId": "alba-inquiry-webhook-id"
+    },
+    {
+      "parameters": {
+        "jsCode": "const payload = $input.first().json.body ?? $input.first().json;\nconst errors = [];\nif (!payload?.submission_id) errors.push('submission_id required');\nif (!payload?.email && !payload?.phone) errors.push('email or phone required');\nif (!payload?.contact_consent) errors.push('contact_consent required');\nconst ch = payload?.preferred_channel;\nif ((ch === 'whatsapp' || ch === 'both') && !payload?.phone) {\n  errors.push('phone required for WhatsApp channel');\n}\nif ((ch === 'email' || ch === 'both') && !payload?.email) {\n  errors.push('email required for email channel');\n}\nif (errors.length) {\n  return [{ json: { valid: false, errors, payload } }];\n}\nreturn [{ json: { valid: true, payload } }];"
+      },
+      "id": "a1b2c3d4-0002-4000-8000-000000000002",
+      "name": "Validate Input",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [240, 400]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "val-ok",
+              "leftValue": "={{ $json.valid }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "a1b2c3d4-0003-4000-8000-000000000003",
+      "name": "IF Validation OK",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [480, 400]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { ok: false, error: $json.errors?.join('; ') || 'validation failed', reference: null, lead_id: null, summary: null } }}",
+        "options": {
+          "responseCode": 400
+        }
+      },
+      "id": "a1b2c3d4-0004-4000-8000-000000000004",
+      "name": "Respond Validation Error",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [720, 560]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/processing_log",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=minimal"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { submission_id: $json.payload.submission_id, workflow_run_id: $execution.id, status: 'processing' } }}",
+        "options": {}
+      },
+      "id": "a1b2c3d4-0005-4000-8000-000000000005",
+      "name": "Log Processing Start",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [720, 320],
+      "notesInFlow": true,
+      "notes": "Supabase URL + service role via $env (see README). Credential name: Supabase URL."
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/leads?submission_id=eq.{{ $('Validate Input').item.json.payload.submission_id }}&select=id,reference,ai_summary",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "a1b2c3d4-0006-4000-8000-000000000006",
+      "name": "Check Duplicate Lead",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [960, 320],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const payload = $('Validate Input').first().json.payload;\nconst dup = $('Check Duplicate Lead').first().json;\nconst rows = Array.isArray(dup) ? dup : [];\nif (rows.length && rows[0]?.reference) {\n  return [{ json: { duplicate: true, reference: rows[0].reference, lead_id: rows[0].id, summary: rows[0].ai_summary || 'Already processed', payload } }];\n}\nreturn [{ json: { duplicate: false, payload } }];"
+      },
+      "id": "a1b2c3d4-0007-4000-8000-000000000007",
+      "name": "Evaluate Duplicate",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1200, 320]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "dup-yes",
+              "leftValue": "={{ $json.duplicate }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "a1b2c3d4-0008-4000-8000-000000000008",
+      "name": "IF Duplicate Lead",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [1440, 320]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { ok: true, reference: $json.reference, lead_id: $json.lead_id, summary: $json.summary } }}",
+        "options": {}
+      },
+      "id": "a1b2c3d4-0009-4000-8000-000000000009",
+      "name": "Respond Duplicate",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1680, 200]
+    },
+    {
+      "parameters": {
+        "jsCode": "const payload = $json.payload;\nconst filter = payload.email\n  ? `email=eq.${encodeURIComponent(payload.email)}`\n  : `phone=eq.${encodeURIComponent(payload.phone)}`;\nreturn [{ json: { payload, customerFilter: filter } }];"
+      },
+      "id": "a1b2c3d4-0010-4000-8000-000000000010",
+      "name": "Prepare Customer Lookup",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1680, 400]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/customers?{{ $json.customerFilter }}&select=id",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "a1b2c3d4-0011-4000-8000-000000000011",
+      "name": "Find Customer",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1920, 400],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const payload = $('Prepare Customer Lookup').first().json.payload;\nconst found = $('Find Customer').first().json;\nconst rows = Array.isArray(found) ? found : [];\nconst customerExists = rows.length > 0 && rows[0]?.id;\nreturn [{ json: { payload, customerExists: Boolean(customerExists), customerId: customerExists ? rows[0].id : null } }];"
+      },
+      "id": "a1b2c3d4-0012-4000-8000-000000000012",
+      "name": "Customer Lookup Result",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2160, 400]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "cust-exists",
+              "leftValue": "={{ $json.customerExists }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "a1b2c3d4-0013-4000-8000-000000000013",
+      "name": "IF Customer Exists",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [2400, 400]
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/customers?id=eq.{{ $json.customerId }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=representation"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { name: $json.payload.name ?? null, last_contact_at: new Date().toISOString(), preferred_channel: $json.payload.preferred_channel, contact_consent: $json.payload.contact_consent, whatsapp_consent: Boolean($json.payload.whatsapp_consent), voice_consent: Boolean($json.payload.voice_consent) } }}",
+        "options": {}
+      },
+      "id": "a1b2c3d4-0014-4000-8000-000000000014",
+      "name": "Update Customer",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [2640, 280],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/customers",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=representation"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { name: $json.payload.name || null, email: $json.payload.email || null, phone: $json.payload.phone || null, preferred_channel: $json.payload.preferred_channel, contact_consent: $json.payload.contact_consent, whatsapp_consent: Boolean($json.payload.whatsapp_consent), voice_consent: Boolean($json.payload.voice_consent) } }}",
+        "options": {}
+      },
+      "id": "a1b2c3d4-0015-4000-8000-000000000015",
+      "name": "Create Customer",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [2640, 520],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const ctx = $('Customer Lookup Result').first().json;\nconst payload = ctx.payload;\nlet customerId = ctx.customerId;\nconst upd = $('Update Customer').first()?.json;\nconst crt = $('Create Customer').first()?.json;\nif (!customerId) {\n  if (Array.isArray(upd) && upd[0]?.id) customerId = upd[0].id;\n  else if (Array.isArray(crt) && crt[0]?.id) customerId = crt[0].id;\n  else if (upd?.id) customerId = upd.id;\n  else if (crt?.id) customerId = crt.id;\n}\nif (!customerId) {\n  throw new Error('Customer upsert failed');\n}\nreturn [{ json: { payload, customerId } }];"
+      },
+      "id": "a1b2c3d4-0016-4000-8000-000000000016",
+      "name": "Resolve Customer Id",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2880, 400]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/rpc/next_lead_reference",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={}",
+        "options": {}
+      },
+      "id": "a1b2c3d4-0017-4000-8000-000000000017",
+      "name": "Get Lead Reference RPC",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [3120, 400],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const base = $('Resolve Customer Id').first().json;\nconst rpc = $('Get Lead Reference RPC').first().json;\nlet reference = null;\nif (typeof rpc === 'string') reference = rpc;\nelse if (Array.isArray(rpc) && rpc[0]) reference = String(rpc[0]);\nelse if (rpc && typeof rpc === 'object' && !rpc.error) reference = String(Object.values(rpc)[0] || '');\nif (!reference || reference === 'undefined') {\n  const seq = String(Date.now()).slice(-5);\n  reference = `AC-${seq}`;\n}\nreturn [{ json: { ...base, reference } }];"
+      },
+      "id": "a1b2c3d4-0018-4000-8000-000000000018",
+      "name": "Assign Reference",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [3360, 400]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/chat/completions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.OPENAI_API_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { model: $env.OPENAI_MODEL || 'gpt-4o-mini', temperature: 0.2, response_format: { type: 'json_object' }, messages: [ { role: 'system', content: 'You are ALBA CARS lead qualification AI. Return ONLY valid JSON with keys: category, summary, vehicle (object), buying_timeline, buying_intent, urgency, lead_score (0-100), recommended_action, recommended_cta, voice_agent_eligible (boolean), customer_confirmation, sales_brief. Categories: vehicle_purchase, vehicle_search, test_drive, financing, trade_in, vehicle_sale, general_sales_question, spam. Currency AED.' }, { role: 'user', content: JSON.stringify($json.payload) } ] } }}",
+        "options": {}
+      },
+      "id": "a1b2c3d4-0019-4000-8000-000000000019",
+      "name": "OpenAI Classify",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [3600, 400],
+      "continueOnFail": true,
+      "notesInFlow": true,
+      "notes": "OpenAI API credential placeholder: header Bearer {{ $env.OPENAI_API_KEY }} or n8n credential type OpenAI API."
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "openai-err",
+              "leftValue": "={{ $json.error }}",
+              "rightValue": "",
+              "operator": {
+                "type": "object",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "a1b2c3d4-0020-4000-8000-000000000020",
+      "name": "IF OpenAI Failed",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [3840, 400]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/processing_log",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=minimal"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { submission_id: $('Assign Reference').item.json.payload.submission_id, workflow_run_id: $execution.id, status: 'failed', error_stage: 'openai_classify', error_message: JSON.stringify($json.error || $json) } }}",
+        "options": {}
+      },
+      "id": "a1b2c3d4-0021-4000-8000-000000000021",
+      "name": "Log OpenAI Failure",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [4080, 560],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const ctx = $('Assign Reference').first().json;\nconst ref = ctx.reference;\nconst payload = ctx.payload;\nconst fallback = {\n  category: payload.category_seed || 'general_sales_question',\n  summary: payload.message || 'Website inquiry received.',\n  vehicle: {},\n  buying_timeline: 'unknown',\n  buying_intent: 'medium',\n  urgency: 'medium',\n  lead_score: 45,\n  recommended_action: 'Review inquiry and contact customer.',\n  recommended_cta: 'manual_follow_up',\n  voice_agent_eligible: false,\n  customer_confirmation: `Thanks for contacting ALBA CARS. We received your inquiry. Reference ${ref}.`,\n  sales_brief: `Fallback lead ${ref} — AI classification unavailable.`\n};\nreturn [{ json: { ...ctx, aiParsed: fallback, aiRaw: { fallback: true, error: $input.first().json } } }];"
+      },
+      "id": "a1b2c3d4-0022-4000-8000-000000000022",
+      "name": "AI Fallback Template",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [4320, 560]
+    },
+    {
+      "parameters": {
+        "jsCode": "const ctx = $('Assign Reference').first().json;\nconst openai = $('OpenAI Classify').first().json;\nlet parsed;\ntry {\n  const content = openai.choices?.[0]?.message?.content || '{}';\n  parsed = typeof content === 'string' ? JSON.parse(content) : content;\n} catch (e) {\n  parsed = { summary: 'Parse error', lead_score: 40, category: 'general_sales_question' };\n}\nreturn [{ json: { ...ctx, aiParsed: parsed, aiRaw: openai } }];"
+      },
+      "id": "a1b2c3d4-0023-4000-8000-000000000023",
+      "name": "Extract OpenAI JSON",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [4080, 280]
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.first().json;\nconst payload = item.payload;\nconst parsed = item.aiParsed || {};\nlet score = Number(parsed.lead_score);\nif (Number.isNaN(score)) score = 0;\nscore = Math.max(0, Math.min(100, Math.round(score)));\nlet priority = 'early';\nif (score >= 80) priority = 'hot';\nelse if (score >= 50) priority = 'warm';\nconst voiceEligible = Boolean(parsed.voice_agent_eligible) && Boolean(payload.phone) && Boolean(payload.voice_consent);\nparsed.voice_agent_eligible = voiceEligible;\nparsed.lead_score = score;\nconst confirmation = parsed.customer_confirmation || `Thanks for contacting ALBA CARS. Reference ${item.reference}.`;\nreturn [{ json: { ...item, parsed, score, priority, voiceEligible, confirmation } }];"
+      },
+      "id": "a1b2c3d4-0024-4000-8000-000000000024",
+      "name": "Parse AI and Apply Rules",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [4560, 400]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/leads",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=representation"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { submission_id: $json.payload.submission_id, reference: $json.reference, customer_id: $json.customerId, category: $json.parsed.category, intent: $json.payload.intent, original_message: $json.payload.message || null, ai_summary: $json.parsed.summary, ai_raw: $json.parsed, vehicle_interest: ($json.parsed.vehicle ? `${$json.parsed.vehicle.make || ''} ${$json.parsed.vehicle.model || ''}`.trim() : null) || $json.payload.page_context?.vehicle_name || null, vehicle_id: $json.payload.page_context?.vehicle_id || null, budget_aed: $json.parsed.vehicle?.budget_aed ?? null, buying_timeline: $json.parsed.buying_timeline, buying_intent: $json.parsed.buying_intent, urgency: $json.parsed.urgency, lead_score: $json.score, priority: $json.priority, recommended_action: $json.parsed.recommended_action, recommended_cta: $json.parsed.recommended_cta, status: $json.parsed.category === 'spam' ? 'spam' : 'open', source_page: $json.payload.page_context?.page_url || null, page_context: $json.payload.page_context || {} } }}",
+        "options": {}
+      },
+      "id": "a1b2c3d4-0025-4000-8000-000000000025",
+      "name": "Insert Lead",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [4800, 400],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "lead-err",
+              "leftValue": "={{ $json.error }}",
+              "rightValue": "",
+              "operator": {
+                "type": "object",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "a1b2c3d4-0026-4000-8000-000000000026",
+      "name": "IF Insert Lead Failed",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [5040, 400]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/processing_log",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=minimal"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { submission_id: $('Parse AI and Apply Rules').item.json.payload.submission_id, workflow_run_id: $execution.id, status: 'failed', error_stage: 'insert_lead', error_message: JSON.stringify($json.error || $json) } }}",
+        "options": {}
+      },
+      "id": "a1b2c3d4-0027-4000-8000-000000000027",
+      "name": "Log Insert Lead Failed",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [5280, 560],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { ok: false, reference: $('Parse AI and Apply Rules').item.json.reference, lead_id: null, summary: 'Lead insert failed' } }}",
+        "options": {
+          "responseCode": 500
+        }
+      },
+      "id": "a1b2c3d4-0028-4000-8000-000000000028",
+      "name": "Respond Insert Failed",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [5520, 560]
+    },
+    {
+      "parameters": {
+        "jsCode": "const ctx = $('Parse AI and Apply Rules').first().json;\nconst leadRow = $('Insert Lead').first().json;\nconst lead = Array.isArray(leadRow) ? leadRow[0] : leadRow;\nif (!lead?.id) throw new Error('Missing lead id after insert');\nreturn [{ json: { ...ctx, lead_id: lead.id } }];"
+      },
+      "id": "a1b2c3d4-0029-4000-8000-000000000029",
+      "name": "Attach Lead Id",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [5280, 320]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.priority }}",
+                    "rightValue": "hot",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "hot"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.priority }}",
+                    "rightValue": "warm",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "warm"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.priority }}",
+                    "rightValue": "early",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "early"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "a1b2c3d4-0030-4000-8000-000000000030",
+      "name": "Switch Priority",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [5520, 320]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/communications",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=minimal"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { lead_id: $json.lead_id, channel: 'sales_alert', message_type: 'alert', content: $json.parsed.sales_brief || ('Hot lead ' + $json.reference), delivery_status: $env.SALES_ALERT_PROVIDER ? 'pending' : 'skipped', error_details: $env.SALES_ALERT_PROVIDER ? null : 'Sales alert provider not configured' } }}",
+        "options": {}
+      },
+      "id": "a1b2c3d4-0031-4000-8000-000000000031",
+      "name": "Insert Sales Alert",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [5760, 160],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "email-ch",
+              "leftValue": "={{ $json.payload.preferred_channel }}",
+              "rightValue": "email",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "both-ch",
+              "leftValue": "={{ $json.payload.preferred_channel }}",
+              "rightValue": "both",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "id": "a1b2c3d4-0032-4000-8000-000000000032",
+      "name": "IF Email Channel",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [6000, 320]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/communications",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=minimal"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { lead_id: $json.lead_id, channel: 'email', message_type: 'confirmation', content: $json.confirmation, delivery_status: $env.EMAIL_PROVIDER ? 'pending' : 'skipped', error_details: $env.EMAIL_PROVIDER ? null : 'Email provider not configured — body stored for review' } }}",
+        "options": {}
+      },
+      "id": "a1b2c3d4-0033-4000-8000-000000000033",
+      "name": "Insert Email Communication",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [6240, 240],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "jsCode": "return [$('Attach Lead Id').first()];"
+      },
+      "id": "a1b2c3d4-0034-4000-8000-000000000034",
+      "name": "Pass Through After Email",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [6240, 400]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "wa-ch",
+              "leftValue": "={{ $json.payload.preferred_channel }}",
+              "rightValue": "whatsapp",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "both-wa",
+              "leftValue": "={{ $json.payload.preferred_channel }}",
+              "rightValue": "both",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "id": "a1b2c3d4-0035-4000-8000-000000000035",
+      "name": "IF WhatsApp Channel",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [6480, 320]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/communications",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=minimal"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { lead_id: $json.lead_id, channel: 'whatsapp', message_type: 'confirmation', content: $json.confirmation, delivery_status: $env.WHATSAPP_PROVIDER ? 'pending' : 'skipped', error_details: $env.WHATSAPP_PROVIDER ? null : 'WhatsApp provider not configured — body stored for review' } }}",
+        "options": {}
+      },
+      "id": "a1b2c3d4-0036-4000-8000-000000000036",
+      "name": "Insert WhatsApp Communication",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [6720, 240],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "jsCode": "return [$('Attach Lead Id').first()];"
+      },
+      "id": "a1b2c3d4-0037-4000-8000-000000000037",
+      "name": "Pass Through After WhatsApp",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [6720, 400]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "voice-elig",
+              "leftValue": "={{ $json.voiceEligible }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "a1b2c3d4-0038-4000-8000-000000000038",
+      "name": "IF Voice Eligible",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [6960, 320]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/voice_agent_queue",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=minimal"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { lead_id: $json.lead_id, customer_name: $json.payload.name || null, phone: $json.payload.phone, ai_summary: $json.parsed.summary, suggested_opening: 'Hi ' + ($json.payload.name || 'there') + ', calling from ALBA CARS about your inquiry ' + $json.reference + '.', status: 'ready' } }}",
+        "options": {}
+      },
+      "id": "a1b2c3d4-0039-4000-8000-000000000039",
+      "name": "Insert Voice Agent Queue",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [7200, 240],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "jsCode": "return [$('Attach Lead Id').first()];"
+      },
+      "id": "a1b2c3d4-0040-4000-8000-000000000040",
+      "name": "Pass Through After Voice",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [7200, 400]
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/processing_log?submission_id=eq.{{ $json.payload.submission_id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=minimal"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { status: 'success', updated_at: new Date().toISOString() } }}",
+        "options": {}
+      },
+      "id": "a1b2c3d4-0041-4000-8000-000000000041",
+      "name": "Log Processing Success",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [7440, 320],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { ok: true, reference: $json.reference, lead_id: $json.lead_id, summary: $json.parsed.summary } }}",
+        "options": {}
+      },
+      "id": "a1b2c3d4-0042-4000-8000-000000000042",
+      "name": "Respond Success",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [7680, 320]
+    }
+  ],
+  "connections": {
+    "Inquiry Webhook": {
+      "main": [[{ "node": "Validate Input", "type": "main", "index": 0 }]]
+    },
+    "Validate Input": {
+      "main": [[{ "node": "IF Validation OK", "type": "main", "index": 0 }]]
+    },
+    "IF Validation OK": {
+      "main": [
+        [{ "node": "Log Processing Start", "type": "main", "index": 0 }],
+        [{ "node": "Respond Validation Error", "type": "main", "index": 0 }]
+      ]
+    },
+    "Log Processing Start": {
+      "main": [[{ "node": "Check Duplicate Lead", "type": "main", "index": 0 }]]
+    },
+    "Check Duplicate Lead": {
+      "main": [[{ "node": "Evaluate Duplicate", "type": "main", "index": 0 }]]
+    },
+    "Evaluate Duplicate": {
+      "main": [[{ "node": "IF Duplicate Lead", "type": "main", "index": 0 }]]
+    },
+    "IF Duplicate Lead": {
+      "main": [
+        [{ "node": "Respond Duplicate", "type": "main", "index": 0 }],
+        [{ "node": "Prepare Customer Lookup", "type": "main", "index": 0 }]
+      ]
+    },
+    "Prepare Customer Lookup": {
+      "main": [[{ "node": "Find Customer", "type": "main", "index": 0 }]]
+    },
+    "Find Customer": {
+      "main": [[{ "node": "Customer Lookup Result", "type": "main", "index": 0 }]]
+    },
+    "Customer Lookup Result": {
+      "main": [[{ "node": "IF Customer Exists", "type": "main", "index": 0 }]]
+    },
+    "IF Customer Exists": {
+      "main": [
+        [{ "node": "Update Customer", "type": "main", "index": 0 }],
+        [{ "node": "Create Customer", "type": "main", "index": 0 }]
+      ]
+    },
+    "Update Customer": {
+      "main": [[{ "node": "Resolve Customer Id", "type": "main", "index": 0 }]]
+    },
+    "Create Customer": {
+      "main": [[{ "node": "Resolve Customer Id", "type": "main", "index": 0 }]]
+    },
+    "Resolve Customer Id": {
+      "main": [[{ "node": "Get Lead Reference RPC", "type": "main", "index": 0 }]]
+    },
+    "Get Lead Reference RPC": {
+      "main": [[{ "node": "Assign Reference", "type": "main", "index": 0 }]]
+    },
+    "Assign Reference": {
+      "main": [[{ "node": "OpenAI Classify", "type": "main", "index": 0 }]]
+    },
+    "OpenAI Classify": {
+      "main": [[{ "node": "IF OpenAI Failed", "type": "main", "index": 0 }]]
+    },
+    "IF OpenAI Failed": {
+      "main": [
+        [{ "node": "Log OpenAI Failure", "type": "main", "index": 0 }],
+        [{ "node": "Extract OpenAI JSON", "type": "main", "index": 0 }]
+      ]
+    },
+    "Log OpenAI Failure": {
+      "main": [[{ "node": "AI Fallback Template", "type": "main", "index": 0 }]]
+    },
+    "AI Fallback Template": {
+      "main": [[{ "node": "Parse AI and Apply Rules", "type": "main", "index": 0 }]]
+    },
+    "Extract OpenAI JSON": {
+      "main": [[{ "node": "Parse AI and Apply Rules", "type": "main", "index": 0 }]]
+    },
+    "Parse AI and Apply Rules": {
+      "main": [[{ "node": "Insert Lead", "type": "main", "index": 0 }]]
+    },
+    "Insert Lead": {
+      "main": [[{ "node": "IF Insert Lead Failed", "type": "main", "index": 0 }]]
+    },
+    "IF Insert Lead Failed": {
+      "main": [
+        [{ "node": "Log Insert Lead Failed", "type": "main", "index": 0 }],
+        [{ "node": "Attach Lead Id", "type": "main", "index": 0 }]
+      ]
+    },
+    "Log Insert Lead Failed": {
+      "main": [[{ "node": "Respond Insert Failed", "type": "main", "index": 0 }]]
+    },
+    "Attach Lead Id": {
+      "main": [[{ "node": "Switch Priority", "type": "main", "index": 0 }]]
+    },
+    "Switch Priority": {
+      "main": [
+        [{ "node": "Insert Sales Alert", "type": "main", "index": 0 }],
+        [{ "node": "IF Email Channel", "type": "main", "index": 0 }],
+        [{ "node": "IF Email Channel", "type": "main", "index": 0 }]
+      ]
+    },
+    "Insert Sales Alert": {
+      "main": [[{ "node": "IF Email Channel", "type": "main", "index": 0 }]]
+    },
+    "IF Email Channel": {
+      "main": [
+        [{ "node": "Insert Email Communication", "type": "main", "index": 0 }],
+        [{ "node": "Pass Through After Email", "type": "main", "index": 0 }]
+      ]
+    },
+    "Insert Email Communication": {
+      "main": [[{ "node": "Pass Through After Email", "type": "main", "index": 0 }]]
+    },
+    "Pass Through After Email": {
+      "main": [[{ "node": "IF WhatsApp Channel", "type": "main", "index": 0 }]]
+    },
+    "IF WhatsApp Channel": {
+      "main": [
+        [{ "node": "Insert WhatsApp Communication", "type": "main", "index": 0 }],
+        [{ "node": "Pass Through After WhatsApp", "type": "main", "index": 0 }]
+      ]
+    },
+    "Insert WhatsApp Communication": {
+      "main": [[{ "node": "Pass Through After WhatsApp", "type": "main", "index": 0 }]]
+    },
+    "Pass Through After WhatsApp": {
+      "main": [[{ "node": "IF Voice Eligible", "type": "main", "index": 0 }]]
+    },
+    "IF Voice Eligible": {
+      "main": [
+        [{ "node": "Insert Voice Agent Queue", "type": "main", "index": 0 }],
+        [{ "node": "Pass Through After Voice", "type": "main", "index": 0 }]
+      ]
+    },
+    "Insert Voice Agent Queue": {
+      "main": [[{ "node": "Pass Through After Voice", "type": "main", "index": 0 }]]
+    },
+    "Pass Through After Voice": {
+      "main": [[{ "node": "Log Processing Success", "type": "main", "index": 0 }]]
+    },
+    "Log Processing Success": {
+      "main": [[{ "node": "Respond Success", "type": "main", "index": 0 }]]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": ""
+  },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 1,
+  "meta": {
+    "templateCredsSetupCompleted": false,
+    "instanceId": "alba-cars-inquiry-desk-export"
+  },
+  "versionId": "alba-inquiry-v1"
+}
