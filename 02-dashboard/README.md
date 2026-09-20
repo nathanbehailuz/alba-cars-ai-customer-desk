@@ -2,6 +2,8 @@
 
 Lightweight internal UI over Supabase: leads, communications (messages), and AI sample evaluation runs.
 
+**Production:** https://alba-cars-dashboard.vercel.app
+
 ## Stack
 
 - Next.js 15 + TypeScript + Tailwind

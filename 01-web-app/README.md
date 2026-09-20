@@ -2,6 +2,8 @@
 
 Public multi-page mimic of [albacars.ae](https://albacars.ae/) with the **inquiry desk** replacing the WhatsApp bubble.
 
+**Production:** https://alba-cars-web.vercel.app
+
 ## Stack
 
 - Next.js 15 (App Router) + TypeScript + Tailwind

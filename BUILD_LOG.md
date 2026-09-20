@@ -9,49 +9,65 @@ Built a monorepo per [docs/task.md](docs/task.md): marketing-site mimic + inquir
 | Piece | Choice | Why |
 | --- | --- | --- |
 | Web + dashboard | Next.js 15 App Router, TS, Tailwind | Fast multi-page UI + API route proxy to n8n |
-| DB | Supabase Postgres + RLS | Assignment-friendly verifiable CRM; service role for n8n |
-| Automation | n8n webhook export + local `run-samples.mjs` | Meets task.md; local runner unblocks GPT eval without Cloud |
-| AI | OpenAI chat completions JSON mode | Classify, score, draft confirmation |
+| DB | Supabase Postgres + RLS (`alba_*` on **grid150**) | Assignment-friendly verifiable CRM; service role for n8n / dashboard reads |
+| Automation | n8n Cloud webhook + local `run-samples.mjs` | Meets task.md; local runner for GPT eval offline |
+| AI | OpenAI `gpt-5-nano` JSON mode | Classify, score, draft confirmation |
+| Hosting | Vercel (two projects) | Live review URLs for web + dashboard |
 
 ## Key decisions & trade-offs
 
 - **Multi-page mimic (Home/Buy/Sell/Finance)** instead of widget-only — matches PRD lock and reviewer recognition of [albacars.ae](https://albacars.ae/).
-- **Stub webhook** in `01-web-app` when `N8N_WEBHOOK_URL` unset — UI demoable before n8n is imported.
+- **Prefixed tables on shared grid150** — free-tier project limit blocked a dedicated Supabase project; schema applied as `alba_*` so it stays separate from other data.
+- **n8n Cloud Variables (`$vars`)** — Cloud denies `$env`; workflow uses Personal Variables.
 - **Communications `skipped`** without email/WhatsApp providers — still verifiable message content in Supabase/dashboard.
-- **Local sample runner** mirrors n8n — verifies GPT behaviour and fills `ai_eval_runs` when Cloud env is delayed.
-- **Did not apply schema to existing Supabase projects** (`nathanbehailuz's Project`, `grid150`) — they hold unrelated data; free-tier limit blocked a new project.
+- **Local sample runner** mirrors n8n — fills `alba_ai_eval_runs` when needed.
+- **Sales notification** for MVP: `sales_alert` row in `alba_communications` (delivery `skipped` without provider).
 
 ## Hard parts / dead ends
 
 - `create-next-app` refused the workspace path (false “not writable”); scaffolded Next apps manually.
-- Sandboxed `npm install` hit EPERM on nested package files; clean install/build via unrestricted agent runs.
-- Supabase `create_project` failed: **2 free projects max** for the org owner. Schema lives in `supabase/migrations` awaiting apply.
-- GitHub CLI tokens invalid / Connect SCM timed out — commits are local only until re-auth + remote.
+- Sandboxed `npm install` hit EPERM on nested package files; clean install via unrestricted runs.
+- Supabase `create_project` failed: **2 free projects max** — reused grid150 with `alba_*` migrations.
+- n8n Cloud iteration issues (fixed in exported JSON):
+  - `$env` → `$vars`
+  - empty Supabase list GETs halted the chain → `alwaysOutputData`
+  - **Resolve Customer Id** crashed on create-branch (`Update Customer` not executed)
+  - **Respond Success** too late / wrong `$json` → empty HTTP 200 body
+  - Create Customer `on_conflict=email` invalid against `lower(email)` unique index → plain POST + `return=representation`
+- Vercel blocked Next.js **15.1.0 / 15.2.4** (CVE-2025-66478); apps upgraded to **15.5.25** for deploy.
 
 ## How I verified it works
 
-- `01-web-app`: `npm run build` succeeded (routes `/`, `/buy`, `/sell`, `/finance`, `/api/inquiry`).
-- `02-dashboard`: `npm run build` succeeded (leads, messages, eval, lead detail).
-- n8n: importable `alba-inquiry-workflow.json` + sample payloads + documented verify steps.
-- End-to-end against live Supabase + OpenAI + n8n: **pending credentials** (see below).
+- `01-web-app` / `02-dashboard`: `npm run build` succeeded locally.
+- n8n Production webhook: **HTTP 200** with reference **AC-42904** (retest7), lead + processing **success**, communications written.
+- Vercel smoke: `POST https://alba-cars-web.vercel.app/api/inquiry` → **200** with reference **AC-85949**, `mode: n8n`.
+- Dashboard / web production URLs return **200** (see Live links in [README.md](README.md)).
+
+## Live surfaces
+
+| Surface | URL |
+| --- | --- |
+| Web app | https://alba-cars-web.vercel.app |
+| Dashboard | https://alba-cars-dashboard.vercel.app |
+| n8n Cloud | https://albacarsdemo.app.n8n.cloud (workflow Active, path `alba-inquiry`) |
+| Repository | https://github.com/nathanbehailuz/alba-cars-ai-customer-desk |
 
 ## Known limitations
 
-- No live Supabase project linked yet → dashboard shows config banner until env + migration applied.
-- No live n8n instance URL in README yet.
-- Email/WhatsApp delivery not wired (stored as skipped).
-- Voice agent = queue status only.
+- Email/WhatsApp delivery not wired (stored as `skipped` with drafted body).
+- Voice agent = queue status only (`ready_for_voice_agent` / `alba_voice_agent_queue`).
 - Mocked vehicle stock only.
-- Demo disclaimer required (not production alba).
-- Next.js 15.1.0 may need upgrade for upstream CVE advisories.
+- Demo disclaimer required (not production Alba).
+- Dashboard uses **service_role** server-side for demo reads (not production-hardened auth).
+- Optional video walkthrough not recorded yet.
 
 ## Time spent
 
-Rough: scaffold + PRD alignment ~0.5h · schema ~0.5h · web app ~1.5h · dashboard ~1h · n8n/samples/runner ~1.5h · docs/build log ~0.5h.
+Rough: scaffold + PRD ~0.5h · schema ~0.5h · web app ~1.5h · dashboard ~1h · n8n/samples/wiring/fixes ~3h · Vercel + submission docs ~1h.
 
-## Blockers for you
+## Optional follow-ups (not blockers)
 
-1. **Supabase service role** — paste `SUPABASE_SERVICE_ROLE_KEY` from grid150 Project Settings → API into root `.env` and `02-dashboard/.env.local` (anon alone cannot read `alba_*` under RLS). Prefixed tables are already live on grid150.
-2. **OpenAI key scopes** — current key returns `missing_scope` / `model.request`. Create a secret key with model request permission; keep `OPENAI_MODEL=gpt-5-nano` (cheapest). Rotate if the old key was shared.
-3. **n8n** — URL is set, but production returns **404** until the workflow is **Active**. Re-import repo JSON so nodes hit `alba_*` tables.
-4. ~~GitHub~~ — remote works; latest push succeeded (`bedb603`).
+1. Demo video for the submission form.
+2. Wire Resend / WhatsApp Business for real delivery statuses.
+3. Simple dashboard auth or private Vercel protection for review.
+4. Appointment calendar source beyond configurable `APPOINTMENT_URL`.
