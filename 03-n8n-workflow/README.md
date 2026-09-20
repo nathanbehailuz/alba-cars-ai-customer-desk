@@ -32,10 +32,14 @@ Apply SQL in [`../supabase/migrations`](../supabase/migrations) before running.
 
 ## How to run (n8n)
 
+See **[ACTIVATE.md](./ACTIVATE.md)** for import → env → Active toggle → Production URL.
+
 1. Import `alba-inquiry-workflow.json`.
-2. Set env vars above; activate the workflow.
+2. Set env vars; activate the workflow.
 3. Copy the webhook URL (path `alba-inquiry`) into `01-web-app` `.env.local` as `N8N_WEBHOOK_URL` or `NEXT_PUBLIC_N8N_WEBHOOK_URL`.
 4. Submit from the widget, or POST a file from `sample-payloads/`.
+
+In-repo fallback (same logic without Cloud): set `INQUIRY_PIPELINE=local` and Supabase/OpenAI env on `01-web-app` — see `01-web-app/src/lib/pipeline.ts`.
 
 ### Manual sample POST
 
