@@ -2,7 +2,9 @@
 
 Lightweight internal UI over Supabase: leads, communications (messages), and AI sample evaluation runs.
 
-**Production:** https://alba-cars-dashboard.vercel.app
+**Production:** https://alba-cars-dashboard-dun.vercel.app
+
+> Note: `alba-cars-dashboard.vercel.app` is a **different** app (Alba OS Sales CRM). Use the `-dun` URL above for this inquiry-desk dashboard.
 
 ## Stack
 

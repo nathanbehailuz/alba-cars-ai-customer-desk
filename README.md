@@ -33,7 +33,7 @@ Website inquiry desk, AI lead qualification, and n8n automation for ALBA CARS â€
 | Surface | URL |
 | --- | --- |
 | Web app | https://alba-cars-web.vercel.app |
-| Dashboard | https://alba-cars-dashboard.vercel.app |
+| Dashboard | https://alba-cars-dashboard-dun.vercel.app |
 | n8n | https://albacarsdemo.app.n8n.cloud (Active; path `alba-inquiry`) |
 | Repository | https://github.com/nathanbehailuz/alba-cars-ai-customer-desk |
 

@@ -48,7 +48,7 @@ Built a monorepo per [docs/task.md](docs/task.md): marketing-site mimic + inquir
 | Surface | URL |
 | --- | --- |
 | Web app | https://alba-cars-web.vercel.app |
-| Dashboard | https://alba-cars-dashboard.vercel.app |
+| Dashboard | https://alba-cars-dashboard-dun.vercel.app |
 | n8n Cloud | https://albacarsdemo.app.n8n.cloud (workflow Active, path `alba-inquiry`) |
 | Repository | https://github.com/nathanbehailuz/alba-cars-ai-customer-desk |
 
