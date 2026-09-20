@@ -1,5 +1,13 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
+export type EmbeddedCommunication = {
+  content: string;
+  message_type: string;
+  channel: string;
+  delivery_status?: string;
+  created_at?: string;
+};
+
 export type Lead = {
   id: string;
   submission_id: string;
@@ -17,6 +25,7 @@ export type Lead = {
   vehicle_interest: string | null;
   created_at: string;
   customers?: { name: string | null; email: string | null; phone: string | null } | null;
+  communications?: EmbeddedCommunication[];
 };
 
 /** PostgREST embed typing may use arrays; alba_leads.customer_id is many-to-one. */
@@ -26,8 +35,13 @@ export function normalizeLeadRow(row: Record<string, unknown>): Lead {
   if (raw != null) {
     customers = (Array.isArray(raw) ? raw[0] : raw) as Lead["customers"];
   }
-  const { alba_customers: _embed, ...rest } = row;
-  return { ...rest, customers } as Lead;
+  const rawComms = row.alba_communications ?? row.communications;
+  let communications: EmbeddedCommunication[] | undefined;
+  if (rawComms != null) {
+    communications = (Array.isArray(rawComms) ? rawComms : [rawComms]) as EmbeddedCommunication[];
+  }
+  const { alba_customers: _c, alba_communications: _m, ...rest } = row;
+  return { ...rest, customers, communications } as Lead;
 }
 
 export type Communication = {

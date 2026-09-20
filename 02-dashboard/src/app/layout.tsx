@@ -21,7 +21,7 @@ export const metadata: Metadata = {
 };
 
 const nav = [
-  { href: "/", label: "Leads" },
+  { href: "/", label: "Submissions" },
   { href: "/messages", label: "Messages" },
   { href: "/eval", label: "AI samples" },
 ];
@@ -35,7 +35,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-4">
               <div>
                 <p className="text-sm font-semibold tracking-wide">ALBA Desk</p>
-                <p className="text-xs text-mute">Internal · leads &amp; AI eval</p>
+                <p className="text-xs text-mute">Internal · submissions &amp; AI eval</p>
               </div>
               <nav className="flex gap-1 text-sm">
                 {nav.map((item) => (
