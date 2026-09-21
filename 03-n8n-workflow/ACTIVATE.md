@@ -1,33 +1,42 @@
-# Activate the n8n workflow (item 3)
+# Activate the n8n workflow
 
-The export in this folder is already written. You only need to **import + turn it on** in n8n Cloud so the Production webhook stops returning 404.
+Import [`alba-inquiry-workflow.json`](./alba-inquiry-workflow.json), set Variables, and turn the workflow **Active** so the Production webhook stops returning 404.
 
-## Critical (n8n Cloud)
+**Reviewer login** for the live instance is in the Notes on the [Alba Dev Tests submission](https://devtest.albacars.ae/apply/onfbdgbvtx2hgz/test/6a4669f22063428fcf521f77) — never commit passwords to git.
 
-Cloud **blocks** `$env.*` (“access to env vars denied”). This workflow uses **`$vars.*`**.
+---
 
-Create variables under **Personal → Variables** (or Overview → Variables):
+## Variables (n8n Cloud)
 
-| Key | Value |
+Cloud blocks `$env.*`. This workflow uses **`$vars.*`**.
+
+Create under **Personal → Variables** (or Overview → Variables). Placeholders only — never real secrets in the repo:
+
+| Key | Example / notes |
 | --- | --- |
 | `OPENAI_API_KEY` | your `sk-…` key |
 | `OPENAI_MODEL` | `gpt-5-nano` |
 | `SUPABASE_URL` | `https://YOUR_PROJECT.supabase.co` |
-| `SUPABASE_SERVICE_ROLE_KEY` | Supabase **service_role** JWT (`eyJ…` with role service_role) |
+| `SUPABASE_SERVICE_ROLE_KEY` | service_role JWT (`eyJ…`) |
 
-Optional (if used by nodes): `EMAIL_PROVIDER`, `WHATSAPP_PROVIDER`, `SALES_ALERT_PROVIDER`.
+Optional: `EMAIL_PROVIDER`, `WHATSAPP_PROVIDER`, `SALES_ALERT_PROVIDER` (if unset, communications store as `skipped`).
 
-## Steps (n8n Cloud)
+See also [`.env.example`](./.env.example).
 
-1. Open [https://albacarsdemo.app.n8n.cloud](https://albacarsdemo.app.n8n.cloud) and sign in.
-2. Add the **Variables** above.
-3. **Workflows** → import `03-n8n-workflow/alba-inquiry-workflow.json`  
-   (If an older copy exists, delete it or re-import so expressions use `$vars`, not `$env`, and error paths use evaluate + Respond nodes.)
-4. Confirm Webhook path is `alba-inquiry`.
+---
+
+## Steps
+
+1. Open https://albacarsdemo.app.n8n.cloud and sign in.
+2. Add the Variables above.
+3. **Workflows** → import `alba-inquiry-workflow.json`.  
+   If an older copy exists, delete it or re-import so expressions use `$vars` and error paths use evaluate + Respond nodes.
+4. Confirm webhook path is `alba-inquiry`.
 5. **Save** → toggle **Active / Published** ON.
-6. Copy **Production** webhook URL into `01-web-app/.env.local` as `N8N_WEBHOOK_URL`.
-7. Restart `npm run dev` if the app is running.
-8. After a green run, capture one **Success** execution detail screenshot into `docs/success-execution.png` (not the Overview failure-rate panel).
+6. Copy the **Production** webhook URL into `01-web-app/.env.local` as `N8N_WEBHOOK_URL`.
+7. Restart the web app if it is already running.
+
+---
 
 ## Quick test
 
@@ -37,19 +46,20 @@ curl -sS -X POST "$N8N_WEBHOOK_URL" \
   -d '{"submission_id":"33333333-3333-4333-8333-333333333301","intent":"buy","category_seed":"vehicle_purchase","name":"Test","email":"test@example.com","preferred_channel":"email","message":"Toyota RAV4 under 130000","contact_consent":true,"whatsapp_consent":false,"voice_consent":false,"page_context":{"source":"curl","page_type":"buy","submitted_at":"2026-03-20T12:00:00.000Z"}}'
 ```
 
-Expect JSON with `reference` like `AC-#####`.
+Expect JSON with `reference` like `AC-#####`. Then confirm a row on the [dashboard](https://alba-cars-dashboard-dun.vercel.app) or in Supabase `alba_leads`.
 
-| Symptom | Meaning |
+### Common symptoms
+
+| Symptom | Likely cause |
 | --- | --- |
 | **404** | Workflow not Active |
-| **500** + `access to env vars denied` | Still using `$env` — re-import `$vars` JSON + set Variables |
-| **200 empty body**, run still succeeds in Supabase | **Respond Success** was after comms + **Log Processing Success** (PATCH output has no `reference`) or webhook timed out — re-import JSON that responds right after **Attach Lead Id** with `submission_id` |
-| **200 empty body**, log stuck at `processing` | **Check Duplicate Lead** returned `[]` (0 items) and n8n stopped the chain — re-import JSON with `alwaysOutputData` on list GETs |
-| **500** + `Node 'Update Customer' hasn't been executed` | **Resolve Customer Id** read the unused branch — re-import JSON that uses `$input` / `.isExecuted` |
-| **500** + `Customer upsert failed` after **Create Customer** shows `23505` duplicate | **Find Customer** row was a single `{id}` object (not an array) so lookup missed — re-import JSON with fixed **Customer Lookup Result** |
-| **500** + `Customer upsert failed` / **Create Customer** output `42P10` | **Create Customer** used `?on_conflict=email` but uniqueness is on `lower(email)` — re-import JSON with plain POST insert (no `on_conflict`) |
-| **500** + Supabase/OpenAI error | Wrong Variable values / keys |
+| **500** + `access to env vars denied` | Still on `$env` — re-import `$vars` export and set Variables |
+| **200** empty body | Stale export — respond must run after **Attach Lead Id**; list GETs need `alwaysOutputData` |
+| **500** customer upsert / missing branch | Stale **Resolve Customer Id** / lookup — re-import current JSON |
+| **500** OpenAI / Supabase | Wrong Variable values |
 
-## Already automated in this repo
+---
 
-In-app fallback: `01-web-app/src/lib/pipeline.ts` with `INQUIRY_PIPELINE=auto|local`.
+## Repo fallback
+
+Without Cloud: `01-web-app/src/lib/pipeline.ts` with `INQUIRY_PIPELINE=auto|local` (OpenAI + Supabase service role in app env).

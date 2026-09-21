@@ -41,7 +41,7 @@ Stable production aliases (use these):
 
 Vercel also creates temporary per-deployment hostnames (long `*-natecodes-projects.vercel.app` URLs) — ignore those for sharing. Production aliases above are the stable links.
 
-**Reviewer access:** n8n Cloud editor login is provided in the assignment submission **Notes** field (never committed to git). Fallback: import [`03-n8n-workflow/alba-inquiry-workflow.json`](./03-n8n-workflow/alba-inquiry-workflow.json) and follow [`03-n8n-workflow/ACTIVATE.md`](./03-n8n-workflow/ACTIVATE.md).
+**Reviewer access:** n8n Cloud login is in the Notes on the [Alba Dev Tests submission](https://devtest.albacars.ae/apply/onfbdgbvtx2hgz/test/6a4669f22063428fcf521f77) (never committed to git). Fallback: import [`03-n8n-workflow/alba-inquiry-workflow.json`](./03-n8n-workflow/alba-inquiry-workflow.json) and follow [`03-n8n-workflow/ACTIVATE.md`](./03-n8n-workflow/ACTIVATE.md). Full workflow docs: [`03-n8n-workflow/README.md`](./03-n8n-workflow/README.md).
 
 ## Security
 
